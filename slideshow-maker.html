@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>CINEMA SLIDE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080808;
+      --bg2:       #0f0f0f;
+      --bg3:       #171717;
+      --bg4:       #1f1f1f;
+      --text:      #f0ebe2;
+      --text-dim:  #7a6e62;
+      --text-faint:#3a3530;
+      --gold:      #d4a853;
+      --gold-dim:  rgba(212,168,83,0.25);
+      --gold-faint:rgba(212,168,83,0.08);
+      --border:    rgba(212,168,83,0.18);
+      --serif:     'Playfair Display', Georgia, 'Times New Roman', serif;
+      --mono:      'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    html { background: var(--bg); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 28px;
+      background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-weight: 400; letter-spacing: 0.35em;
+      font-size: 11px; color: var(--gold);
+    }
+    .logo-mark { font-size: 14px; }
+    .step-pills {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .pill {
+      font-size: 10px; letter-spacing: 0.15em;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid var(--border); color: var(--text-dim);
+      transition: all 0.3s;
+    }
+    .pill.active { border-color: var(--gold); color: var(--gold); background: var(--gold-faint); }
+    .pill.done   { border-color: var(--text-faint); color: var(--text-faint); }
+
+    /* ── Screens ─────────────────────────────────────────── */
+    .screen {
+      min-height: 100vh;
+      padding: 100px 28px 60px;
+      max-width: 680px; margin: 0 auto;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.5s, transform 0.5s;
+      pointer-events: none;
+    }
+    .screen.visible { opacity: 1; transform: none; pointer-events: all; }
+
+    /* ── Screen 1: Setup ─────────────────────────────────── */
+    .screen-title {
+      font-family: var(--serif); font-weight: 300; font-size: clamp(30px,6vw,48px);
+      line-height: 1.15; margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text) 0%, #a89070 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .screen-sub {
+      font-size: 11px; color: var(--text-dim);
+      letter-spacing: 0.2em; margin-bottom: 48px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      background: var(--gold-faint);
+      border-radius: 4px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.3s, background 0.3s;
+      position: relative;
+    }
+    .upload-zone:active { background: var(--gold-dim); border-color: var(--gold); }
+    .upload-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .upload-icon { font-size: 32px; margin-bottom: 14px; }
+    .upload-label {
+      font-family: var(--serif); font-style: italic;
+      font-size: 18px; color: var(--text); margin-bottom: 6px;
+    }
+    .upload-note { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
+    .photo-count-badge {
+      display: inline-block; margin-top: 12px;
+      font-size: 11px; letter-spacing: 0.15em;
+      color: var(--gold); border: 1px solid var(--gold);
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    /* Thumbnail grid */
+    #thumbnail-area { margin-top: 24px; display: none; }
+    .thumbnail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .thumbnail-header span { font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em; }
+    .btn-change {
+      font-size: 11px; letter-spacing: 0.1em; color: var(--gold);
+      background: none; border: none; cursor: pointer;
+      padding: 4px 0; text-decoration: underline; text-underline-offset: 3px;
+    }
+    .thumbs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 4px;
+      max-height: 280px; overflow-y: auto;
+      border-radius: 4px;
+    }
+    .thumbs-grid img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: 2px; display: block;
+    }
+    .thumbs-more {
+      aspect-ratio: 4/3; background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 2px; font-size: 11px; color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* Settings form */
+    #settings-form { margin-top: 40px; display: none; }
+    .form-section-title {
+      font-size: 10px; letter-spacing: 0.3em; color: var(--gold);
+      margin-bottom: 20px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block; font-size: 10px; letter-spacing: 0.2em;
+      color: var(--text-dim); margin-bottom: 7px;
+    }
+    .field input[type=text],
+    .field textarea,
+    .field select {
+      width: 100%; background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 3px; padding: 12px 14px;
+      color: var(--text); font-family: var(--mono); font-size: 13px;
+      outline: none; transition: border-color 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input[type=text]:focus,
+    .field textarea:focus,
+    .field select:focus { border-color: var(--gold); }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23d4a853' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      padding-right: 36px; cursor: pointer;
+    }
+    .field select option { background: #111; }
+
+    /* Range input */
+    .range-wrap { display: flex; align-items: center; gap: 14px; }
+    .range-wrap input[type=range] {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 3px; background: var(--bg4); border-radius: 2px; outline: none;
+    }
+    .range-wrap input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--gold); cursor: pointer;
+      box-shadow: 0 0 0 3px var(--gold-faint);
+    }
+    .range-val {
+      font-size: 18px; font-family: var(--serif); color: var(--gold);
+      min-width: 36px; text-align: right;
+    }
+
+    /* Separator */
+    .sep {
+      height: 1px; background: var(--border);
+      margin: 32px 0;
+    }
+
+    /* Primary button */
+    .btn-primary {
+      display: block; width: 100%; padding: 18px;
+      background: var(--gold); color: #000;
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.3em; text-align: center;
+      border: none; border-radius: 3px; cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:active { opacity: 0.75; transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      display: block; width: 100%; padding: 16px;
+      background: transparent; color: var(--text-dim);
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em;
+      border: 1px solid var(--border); border-radius: 3px; cursor: pointer;
+      text-decoration: none; text-align: center;
+      transition: border-color 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-secondary:active { border-color: var(--text-dim); color: var(--text); }
+
+    /* ── Screen 2: Encoding ──────────────────────────────── */
+    .canvas-preview-wrap {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 32px;
+    }
+    #render-canvas {
+      width: 100%; height: auto; display: block;
+    }
+    .canvas-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5);
+      font-size: 10px; letter-spacing: 0.2em; color: var(--gold);
+    }
+
+    .progress-bar-track {
+      height: 2px; background: var(--bg4); border-radius: 1px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%; background: var(--gold);
+      border-radius: 1px;
+      transition: width 0.5s ease-out;
+    }
+    .encoding-stats {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em;
+    }
+    #status-msg {
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em;
+      margin-bottom: 12px;
+    }
+    .encoding-note {
+      margin-top: 32px; padding: 16px;
+      background: var(--bg3); border-radius: 3px;
+      font-size: 11px; color: var(--text-dim); line-height: 1.7;
+      letter-spacing: 0.05em;
+    }
+    .encoding-note strong { color: var(--text); }
+
+    .btn-cancel {
+      display: block; width: 100%; padding: 14px; margin-top: 16px;
+      background: transparent; color: var(--text-dim);
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-cancel:active { border-color: #7a2020; color: #f0a0a0; }
+
+    .upload-zone.drag-over {
+      background: var(--gold-dim); border-color: var(--gold);
+      border-style: solid;
+    }
+
+    /* ── Screen 3: Done ──────────────────────────────────── */
+    .done-check {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 32px;
+      animation: pulse-ring 2s ease-out forwards;
+    }
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 var(--gold-dim); }
+      100% { box-shadow: 0 0 0 20px transparent; }
+    }
+    .done-check svg { width: 28px; height: 28px; color: var(--gold); }
+    .done-title {
+      font-family: var(--serif); font-weight: 400; font-size: 32px;
+      text-align: center; margin-bottom: 8px;
+    }
+    .done-sub {
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em;
+      text-align: center; margin-bottom: 36px;
+    }
+    #result-video {
+      width: 100%; border-radius: 4px; margin-bottom: 24px;
+      border: 1px solid var(--border); background: #000;
+    }
+    .ios-note {
+      margin-top: 14px;
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em;
+      text-align: center; line-height: 1.6;
+    }
+    .ios-note em { color: var(--gold); font-style: normal; }
+    .gap16 { margin-top: 16px; }
+    .gap32 { margin-top: 32px; }
+
+    /* Error toast */
+    #error-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: #3a0a0a; border: 1px solid #7a2020; border-radius: 4px;
+      padding: 14px 20px; font-size: 12px; color: #f0a0a0;
+      max-width: 90%; z-index: 200;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #error-toast.visible { opacity: 1; pointer-events: all; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">▶</span>
+    <span>CINEMA SLIDE</span>
+  </div>
+  <div class="step-pills">
+    <div class="pill active" id="pill-1">01</div>
+    <div class="pill" id="pill-2">02</div>
+    <div class="pill" id="pill-3">03</div>
+  </div>
+</header>
+
+<!-- ── Screen 1: Setup ───────────────────────────── -->
+<div class="screen visible" id="screen-setup">
+  <div class="screen-title">スライドショーを<br><em style="font-style:italic">つくる</em></div>
+  <div class="screen-sub">PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE</div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept="image/*" multiple>
+    <div class="upload-icon">🎞</div>
+    <div class="upload-label">写真を選択する</div>
+    <div class="upload-note">最大150枚 · JPEG / PNG / HEIC 対応</div>
+  </div>
+
+  <!-- Thumbnail area -->
+  <div id="thumbnail-area">
+    <div class="thumbnail-header">
+      <span id="photo-count-label">0 枚選択済み</span>
+      <button class="btn-change" id="btn-change">変更する</button>
+    </div>
+    <div class="thumbs-grid" id="thumbs-grid"></div>
+  </div>
+
+  <!-- Settings form -->
+  <div id="settings-form">
+    <div class="sep"></div>
+    <div class="form-section-title">TITLE CARD</div>
+    <div class="field">
+      <label>タイトル</label>
+      <input type="text" id="inp-title" placeholder="例: Our Summer 2024">
+    </div>
+    <div class="field">
+      <label>サブタイトル</label>
+      <input type="text" id="inp-subtitle" placeholder="例: A Collection of Memories">
+    </div>
+
+    <div class="sep"></div>
+    <div class="form-section-title">CREDITS</div>
+    <div class="field">
+      <label>クレジットテキスト（最後に表示）</label>
+      <textarea id="inp-credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
+    </div>
+
+    <div class="sep"></div>
+    <div class="form-section-title">SLIDESHOW SETTINGS</div>
+    <div class="field">
+      <label>1枚あたりの表示時間</label>
+      <div class="range-wrap">
+        <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3">
+        <div class="range-val"><span id="val-duration">3</span>s</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>トランジション時間（暗転の速さ）</label>
+      <div class="range-wrap">
+        <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8">
+        <div class="range-val"><span id="val-fade">0.8</span>s</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>解像度 / クオリティ</label>
+      <select id="inp-resolution">
+        <option value="1280x720">HD 720p (1280×720) — 推奨</option>
+        <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
+        <option value="1920x1080">Full HD 1080p (1920×1080)</option>
+      </select>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-primary" id="btn-export">🎬 &nbsp; ビデオを作成する</button>
+  </div>
+</div>
+
+<!-- ── Screen 2: Encoding ────────────────────────── -->
+<div class="screen" id="screen-encoding">
+  <div class="screen-title">エンコード中</div>
+  <div class="screen-sub">RENDERING — PLEASE KEEP THE SCREEN ON</div>
+
+  <div class="canvas-preview-wrap">
+    <canvas id="render-canvas" width="1280" height="720"></canvas>
+  </div>
+
+  <div id="status-msg">準備中...</div>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="encoding-stats">
+    <span id="stat-frame">Frame —</span>
+    <span id="stat-pct">0%</span>
+    <span id="stat-eta">— 残り</span>
+  </div>
+
+  <div class="encoding-note">
+    <strong>⚠ 画面をオフにしないでください</strong><br>
+    エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>
+    写真の枚数によって数分かかる場合があります。
+  </div>
+
+  <button class="btn-cancel" id="btn-cancel">✕ &nbsp; キャンセル</button>
+</div>
+
+<!-- ── Screen 3: Done ────────────────────────────── -->
+<div class="screen" id="screen-done">
+  <div class="done-check">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <div class="done-title">完成しました</div>
+  <div class="done-sub">SLIDESHOW VIDEO IS READY</div>
+
+  <video id="result-video" controls playsinline webkit-playsinline></video>
+
+  <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4">
+    ⬇ &nbsp; ダウンロード（MP4）
+  </a>
+  <p class="ios-note">
+    iOSでダウンロードできない場合：<br>
+    ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください
+  </p>
+  <div class="gap32"></div>
+  <button class="btn-secondary" id="btn-restart">← 新しく作る</button>
+</div>
+
+<!-- Error toast -->
+<div id="error-toast"></div>
+
+<script type="module">
+
+// ── State ──────────────────────────────────────────────────
+let photos   = [];   // File[]
+let images   = [];   // HTMLImageElement[]
+let videoURL = null;
+let encodingAborted = false;
+let activeEncoder = null;
+
+const settings = {
+  title:      '',
+  subtitle:   '',
+  credits:    '',
+  photoDuration: 3,
+  fadeDuration:  0.8,
+  width:  1280,
+  height:  720,
+  fps: 15,
+};
+
+// ── DOM refs ───────────────────────────────────────────────
+const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done') };
+const pills         = { 1: $('pill-1'), 2: $('pill-2'), 3: $('pill-3') };
+const fileInput     = $('file-input');
+const thumbArea     = $('thumbnail-area');
+const thumbsGrid    = $('thumbs-grid');
+const settingsForm  = $('settings-form');
+const photoCountLbl = $('photo-count-label');
+const progressFill  = $('progress-fill');
+const statusMsg     = $('status-msg');
+const statFrame     = $('stat-frame');
+const statPct       = $('stat-pct');
+const statEta       = $('stat-eta');
+const canvas        = $('render-canvas');
+const ctx           = canvas.getContext('2d');
+const resultVideo   = $('result-video');
+const downloadLink  = $('download-link');
+
+function $(id) { return document.getElementById(id); }
+
+// ── Screen transitions ────────────────────────────────────
+function showScreen(name) {
+  const order = { setup: 1, encoding: 2, done: 3 };
+  const n = order[name];
+  Object.entries(screens).forEach(([key, el]) => {
+    el.classList.toggle('visible', key === name);
+  });
+  Object.entries(pills).forEach(([k, el]) => {
+    const ki = parseInt(k);
+    el.classList.toggle('active', ki === n);
+    el.classList.toggle('done', ki < n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── File handling ─────────────────────────────────────────
+function handleFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  if (imgs.length > 150) { showError('写真は最大150枚まで選択できます'); return; }
+  photos = imgs;
+  renderThumbs();
+  settingsForm.style.display = 'block';
+}
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+// Drag-and-drop
+const uploadZone = $('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+
+$('btn-change').addEventListener('click', () => {
+  fileInput.click();
+});
+
+let thumbURLs = [];
+function renderThumbs() {
+  thumbURLs.forEach(u => URL.revokeObjectURL(u));
+  thumbURLs = [];
+  photoCountLbl.textContent = `${photos.length} 枚選択済み`;
+  thumbsGrid.innerHTML = '';
+  const show = Math.min(photos.length, 30);
+  for (let i = 0; i < show; i++) {
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(photos[i]);
+    thumbURLs.push(url);
+    img.src = url;
+    img.loading = 'lazy';
+    thumbsGrid.appendChild(img);
+  }
+  if (photos.length > 30) {
+    const more = document.createElement('div');
+    more.className = 'thumbs-more';
+    more.textContent = `+${photos.length - 30}`;
+    thumbsGrid.appendChild(more);
+  }
+  thumbArea.style.display = 'block';
+}
+
+// ── Settings inputs ────────────────────────────────────────
+$('inp-duration').addEventListener('input', e => {
+  $('val-duration').textContent = e.target.value;
+  settings.photoDuration = parseFloat(e.target.value);
+});
+$('inp-fade').addEventListener('input', e => {
+  $('val-fade').textContent = e.target.value;
+  settings.fadeDuration = parseFloat(e.target.value);
+});
+$('inp-resolution').addEventListener('change', e => {
+  const [w, h] = e.target.value.split('x').map(Number);
+  settings.width  = w;
+  settings.height = h;
+});
+
+// ── Export button ─────────────────────────────────────────
+$('btn-export').addEventListener('click', async () => {
+  if (!photos.length) { showError('写真を選択してください'); return; }
+  settings.title    = $('inp-title').value.trim()    || 'Untitled';
+  settings.subtitle = $('inp-subtitle').value.trim();
+  settings.credits  = $('inp-credits').value.trim();
+  settings.photoDuration = parseFloat($('inp-duration').value);
+  settings.fadeDuration  = parseFloat($('inp-fade').value);
+  const [w, h] = $('inp-resolution').value.split('x').map(Number);
+  settings.width = w; settings.height = h;
+  await runExport();
+});
+
+$('btn-cancel').addEventListener('click', () => {
+  encodingAborted = true;
+  if (activeEncoder) {
+    try { activeEncoder.close(); } catch(_) {}
+    activeEncoder = null;
+  }
+  showScreen('setup');
+  setStatus('準備中...');
+  updateProgress(0);
+});
+
+$('btn-restart').addEventListener('click', () => {
+  if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
+  photos = []; images = [];
+  thumbsGrid.innerHTML = '';
+  thumbArea.style.display = 'none';
+  settingsForm.style.display = 'none';
+  fileInput.value = '';
+  showScreen('setup');
+});
+
+// ── Timeline ───────────────────────────────────────────────
+function buildTimeline() {
+  const { photoDuration, fadeDuration } = settings;
+  const segs = [];
+  let t = 0;
+
+  const titleDur = 1 + 2.5 + 1;  // fadein + hold + fadeout
+  segs.push({ type: 'title', start: t, dur: titleDur, fi: 1, fo: 1 });
+  t += titleDur;
+
+  for (let i = 0; i < photos.length; i++) {
+    const dur = fadeDuration + photoDuration + fadeDuration;
+    segs.push({ type: 'photo', idx: i, start: t, dur, fi: fadeDuration, fo: fadeDuration });
+    t += dur;
+  }
+
+  const creditsDur = 1 + 3 + 1;
+  segs.push({ type: 'credits', start: t, dur: creditsDur, fi: 1, fo: 1 });
+  t += creditsDur;
+
+  return { segs, totalDur: t };
+}
+
+function getFrameInfo(timeline, time) {
+  // Binary search for the segment containing this time
+  const segs = timeline.segs;
+  let lo = 0, hi = segs.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const s = segs[mid];
+    if (time < s.start) hi = mid - 1;
+    else if (time >= s.start + s.dur) lo = mid + 1;
+    else {
+      const rel = time - s.start;
+      let alpha;
+      if      (rel < s.fi)               alpha = rel / s.fi;
+      else if (rel > s.dur - s.fo)       alpha = (s.dur - rel) / s.fo;
+      else                               alpha = 1;
+      return { type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)) };
+    }
+  }
+  return { type: 'black', idx: -1, alpha: 0 };
+}
+
+// ── Canvas rendering ───────────────────────────────────────
+function renderFrame(info) {
+  const { width, height } = settings;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, width, height);
+  if (info.type === 'black' || info.alpha <= 0) return;
+
+  ctx.save();
+  ctx.globalAlpha = info.alpha;
+
+  if (info.type === 'photo') {
+    const img = images[info.idx];
+    if (img) drawImageCover(ctx, img, width, height);
+  } else if (info.type === 'title') {
+    drawTitleCard(ctx, width, height);
+  } else if (info.type === 'credits') {
+    drawCreditsCard(ctx, width, height);
+  }
+
+  ctx.restore();
+}
+
+function drawImageCover(ctx, img, W, H) {
+  const scale = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+  const sw = img.naturalWidth * scale;
+  const sh = img.naturalHeight * scale;
+  ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
+}
+
+function drawTitleCard(ctx, W, H) {
+  // Deep gradient background
+  const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
+  g.addColorStop(0,   '#0e0c0a');
+  g.addColorStop(1,   '#000000');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // Gold line top
+  const lineY = H * 0.42;
+  ctx.strokeStyle = '#d4a853';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.28, lineY); ctx.lineTo(W * 0.72, lineY);
+  ctx.stroke();
+
+  // Title
+  const titleSize = Math.round(W / 14);
+  ctx.font      = `700 ${titleSize}px "Playfair Display", Georgia, serif`;
+  ctx.fillStyle = '#f0ebe2';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  wrapText(ctx, settings.title, W / 2, lineY + titleSize * 0.6, W * 0.78, titleSize * 1.35);
+
+  // Subtitle
+  if (settings.subtitle) {
+    const subSize = Math.round(W / 52);
+    ctx.font      = `300 ${subSize}px "IBM Plex Mono", monospace`;
+    ctx.fillStyle = '#d4a853';
+    // Estimate title block height
+    const titleLines = Math.ceil(ctx.measureText(settings.title).width / (W * 0.78)) || 1;
+    const subY = lineY + titleSize * 0.6 + titleLines * titleSize * 1.35 + subSize * 1.2;
+    ctx.fillText(settings.subtitle.toUpperCase(), W / 2, subY);
+  }
+
+  // Gold line bottom
+  const lineY2 = H * 0.72;
+  ctx.strokeStyle = '#d4a853';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.28, lineY2); ctx.lineTo(W * 0.72, lineY2);
+  ctx.stroke();
+}
+
+function drawCreditsCard(ctx, W, H) {
+  const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
+  g.addColorStop(0, '#080808'); g.addColorStop(1, '#000');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  const smallSize = Math.round(W / 70);
+  ctx.font      = `300 ${smallSize}px "IBM Plex Mono", monospace`;
+  ctx.fillStyle = '#6b6456';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('— FIN —', W / 2, H * 0.35);
+
+  const lineY = H * 0.42;
+  ctx.strokeStyle = 'rgba(212,168,83,0.3)';
+  ctx.lineWidth   = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.35, lineY); ctx.lineTo(W * 0.65, lineY);
+  ctx.stroke();
+
+  const credLines = (settings.credits || '').split('\n').filter(Boolean);
+  const credSize  = Math.round(W / 55);
+  ctx.font = `300 ${credSize}px "IBM Plex Mono", monospace`;
+  ctx.fillStyle = '#a09080';
+  const startY = H * 0.5 - ((credLines.length - 1) * credSize * 1.8) / 2;
+  credLines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, startY + i * credSize * 1.8);
+  });
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '', lineY = y;
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, lineY);
+      line  = word; lineY += lineH;
+    } else { line = test; }
+  }
+  ctx.fillText(line, x, lineY);
+}
+
+// ── Image preloading (parallel with concurrency limit) ─────
+async function preloadImages() {
+  images = new Array(photos.length).fill(null);
+  let loaded = 0;
+  const CONCURRENCY = 8;
+
+  async function loadOne(i) {
+    const im = new Image();
+    const url = URL.createObjectURL(photos[i]);
+    images[i] = await new Promise(res => {
+      im.onload  = () => { URL.revokeObjectURL(url); res(im); };
+      im.onerror = () => { URL.revokeObjectURL(url); res(null); };
+      im.src = url;
+    });
+    loaded++;
+    setStatus(`写真を読み込み中… ${loaded} / ${photos.length}`);
+    updateProgress(loaded / photos.length * 0.15);
+  }
+
+  // Process in chunks of CONCURRENCY
+  for (let i = 0; i < photos.length; i += CONCURRENCY) {
+    const batch = [];
+    for (let j = i; j < Math.min(i + CONCURRENCY, photos.length); j++) {
+      batch.push(loadOne(j));
+    }
+    await Promise.all(batch);
+    if (encodingAborted) return;
+  }
+}
+
+// ── Main encode ────────────────────────────────────────────
+async function runExport() {
+  showScreen('encoding');
+  encodingAborted = false;
+
+  // WebCodecs check
+  if (!('VideoEncoder' in window)) {
+    showError('このブラウザは動画エクスポートに対応していません。\niOS 17以上のSafariをご使用ください。');
+    showScreen('setup'); return;
+  }
+
+  try {
+    // Load mp4-muxer dynamically
+    setStatus('ライブラリを読み込み中...');
+    let Muxer, ArrayBufferTarget;
+    try {
+      const mod = await import('https://cdn.jsdelivr.net/npm/mp4-muxer@5/+esm');
+      Muxer = mod.Muxer; ArrayBufferTarget = mod.ArrayBufferTarget;
+    } catch (e) {
+      const mod = await import('https://esm.sh/mp4-muxer');
+      Muxer = mod.Muxer; ArrayBufferTarget = mod.ArrayBufferTarget;
+    }
+
+    // Preload images
+    await preloadImages();
+    if (encodingAborted) return;
+
+    // Fonts
+    setStatus('フォントを準備中...');
+    await document.fonts.ready;
+    try {
+      await Promise.all([
+        document.fonts.load(`700 72px "Playfair Display"`),
+        document.fonts.load(`300 36px "IBM Plex Mono"`),
+      ]);
+    } catch(_) {}
+
+    const { width, height, fps } = settings;
+    canvas.width  = width;
+    canvas.height = height;
+
+    // Build timeline
+    const timeline   = buildTimeline();
+    const totalFrames = Math.ceil(timeline.totalDur * fps);
+    const US_PER_FRAME = 1_000_000 / fps;
+
+    // Generate cover image from title card
+    setStatus('カバー画像を生成中...');
+    const coverCanvas = document.createElement('canvas');
+    coverCanvas.width  = 640;
+    coverCanvas.height = 360;
+    const coverCtx = coverCanvas.getContext('2d');
+    drawTitleCard(coverCtx, 640, 360);
+    const coverDataUrl = coverCanvas.toDataURL('image/jpeg', 0.85);
+    const coverBase64  = coverDataUrl.split(',')[1];
+    const coverBytes   = Uint8Array.from(atob(coverBase64), c => c.charCodeAt(0));
+
+    // Setup muxer
+    const muxer = new Muxer({
+      target: new ArrayBufferTarget(),
+      video:  { codec: 'avc', width, height },
+      fastStart: 'in-memory',
+      coverData: coverBytes,
+    });
+
+    // Codec support test
+    const codecId = 'avc1.42001f';
+    const supported = await VideoEncoder.isConfigSupported({
+      codec: codecId, width, height
+    });
+    if (!supported.supported) {
+      throw new Error(`コーデック (H.264) はこのデバイスでサポートされていません。`);
+    }
+
+    // Setup encoder
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      error:  (e) => { throw e; },
+    });
+    activeEncoder = encoder;
+    encoder.configure({
+      codec:       codecId,
+      width, height,
+      bitrate:     width >= 1920 ? 3_500_000 : width >= 1280 ? 1_800_000 : 900_000,
+      framerate:   fps,
+      latencyMode: 'quality',
+    });
+
+    // Encode frames
+    setStatus('エンコード中...');
+    const startMs = Date.now();
+    let lastKeyframe = -999;
+    let prevType = null, prevIdx = -1, needsRender = true;
+
+    for (let fi = 0; fi < totalFrames; fi++) {
+      if (encodingAborted) return;
+
+      // Back-pressure
+      while (encoder.encodeQueueSize > 30) {
+        await sleep(10);
+      }
+
+      const timeSec = fi / fps;
+      const info    = getFrameInfo(timeline, timeSec);
+
+      // Skip canvas re-render if same content at full opacity (hold portion)
+      needsRender = !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
+      if (needsRender) {
+        renderFrame(info);
+        prevType = info.type;
+        prevIdx  = info.idx;
+      }
+
+      const ts      = Math.round(fi * US_PER_FRAME);
+      const isKey   = (fi - lastKeyframe) >= fps * 5;
+      const vf      = new VideoFrame(canvas, { timestamp: ts, duration: Math.round(US_PER_FRAME) });
+      encoder.encode(vf, { keyFrame: isKey });
+      vf.close();
+      if (isKey) lastKeyframe = fi;
+
+      // Update UI every 6 frames
+      if (fi % 6 === 0) {
+        const ratio   = 0.15 + (fi / totalFrames) * 0.82;
+        const elapsed = (Date.now() - startMs) / 1000;
+        const speed   = fi / (elapsed || 0.001);
+        const remain  = speed > 0 ? Math.ceil((totalFrames - fi) / speed) : 0;
+        updateProgress(ratio);
+        statFrame.textContent = `Frame ${fi} / ${totalFrames}`;
+        statPct.textContent   = `${Math.round((fi / totalFrames) * 100)}%`;
+        statEta.textContent   = remain > 0 ? `約${remain}秒 残り` : '—';
+        await sleep(0);
+      }
+    }
+
+    if (encodingAborted) return;
+
+    setStatus('仕上げ中...');
+    await encoder.flush();
+    encoder.close();
+    activeEncoder = null;
+    muxer.finalize();
+
+    updateProgress(1);
+    statPct.textContent = '100%';
+    statEta.textContent = '完了';
+
+    const buffer = muxer.target.buffer;
+    const blob   = new Blob([buffer], { type: 'video/mp4' });
+    if (videoURL) URL.revokeObjectURL(videoURL);
+    videoURL          = URL.createObjectURL(blob);
+    resultVideo.src   = videoURL;
+    resultVideo.poster = coverDataUrl;
+    downloadLink.href = videoURL;
+    downloadLink.download = `slideshow_${Date.now()}.mp4`;
+
+    await sleep(400);
+    showScreen('done');
+
+  } catch (err) {
+    if (encodingAborted) return;
+    console.error(err);
+    showError('エラーが発生しました: ' + (err.message || err));
+    showScreen('setup');
+  } finally {
+    activeEncoder = null;
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setStatus(msg) { statusMsg.textContent = msg; }
+
+function updateProgress(ratio) {
+  progressFill.style.width = Math.round(ratio * 100) + '%';
+}
+
+function showError(msg) {
+  const el = $('error-toast');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 5000);
+}
+
+</script>
+</body>
+</html>
