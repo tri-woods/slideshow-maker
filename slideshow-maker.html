@@ -329,6 +329,46 @@
       transition: opacity 0.3s;
     }
     #error-toast.visible { opacity: 1; pointer-events: all; }
+
+    /* ── Profile ────────────────────────────────────────── */
+    .profile-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--gold); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .profile-btn:active { border-color: var(--gold); background: var(--gold-faint); }
+    .profile-btn svg { width: 16px; height: 16px; }
+
+    .profile-overlay {
+      position: fixed; inset: 0; z-index: 150;
+      background: rgba(0,0,0,0.75);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .profile-overlay.visible { opacity: 1; pointer-events: all; }
+    .profile-modal {
+      width: 90%; max-width: 420px; max-height: 85vh; overflow-y: auto;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 28px;
+    }
+    .profile-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .profile-close {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 16px; cursor: pointer; padding: 4px 8px;
+    }
+    .profile-saved-toast {
+      font-size: 11px; color: var(--gold); letter-spacing: 0.15em;
+      text-align: center; margin-top: 12px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .profile-saved-toast.visible { opacity: 1; }
   </style>
 </head>
 <body>
@@ -343,6 +383,12 @@
     <div class="pill" id="pill-2">02</div>
     <div class="pill" id="pill-3">03</div>
   </div>
+  <button class="profile-btn" id="btn-profile" title="プロフィール設定">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  </button>
 </header>
 
 <!-- ── Screen 1: Setup ───────────────────────────── -->
@@ -471,6 +517,49 @@
 <!-- Error toast -->
 <div id="error-toast"></div>
 
+<!-- Profile modal -->
+<div class="profile-overlay" id="profile-overlay">
+  <div class="profile-modal">
+    <div class="profile-modal-header">
+      <span class="form-section-title" style="margin:0;padding:0;border:0">PROFILE</span>
+      <button class="profile-close" id="btn-profile-close">✕</button>
+    </div>
+    <div class="field">
+      <label>名前 / クレジット名</label>
+      <input type="text" id="inp-profile-name" placeholder="例: Taro Yamada">
+    </div>
+    <div class="sep"></div>
+    <div class="form-section-title" style="border:0;padding:0">DEFAULT SETTINGS</div>
+    <div class="field">
+      <label>デフォルト表示時間</label>
+      <div class="range-wrap">
+        <input type="range" id="inp-profile-duration" min="1" max="10" step="0.5" value="3">
+        <div class="range-val"><span id="val-profile-duration">3</span>s</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>デフォルトトランジション時間</label>
+      <div class="range-wrap">
+        <input type="range" id="inp-profile-fade" min="0.3" max="2" step="0.1" value="0.8">
+        <div class="range-val"><span id="val-profile-fade">0.8</span>s</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>デフォルト解像度</label>
+      <select id="inp-profile-resolution">
+        <option value="1280x720">HD 720p (1280×720) — 推奨</option>
+        <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
+        <option value="1920x1080">Full HD 1080p (1920×1080)</option>
+      </select>
+    </div>
+    <div class="sep"></div>
+    <button class="btn-primary" id="btn-profile-save">保存する</button>
+    <div class="gap16"></div>
+    <button class="btn-secondary" id="btn-profile-clear">設定をリセット</button>
+    <div class="profile-saved-toast" id="profile-saved-toast">✓ 保存しました</div>
+  </div>
+</div>
+
 <script type="module">
 
 // ── State ──────────────────────────────────────────────────
@@ -490,6 +579,18 @@ const settings = {
   height:  720,
   fps: 15,
 };
+
+// ── Profile persistence ──────────────────────────────────────
+const PROFILE_KEY = 'cinema-slide-profile';
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch(_) { return null; }
+}
+function saveProfileData(data) {
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data)); } catch(_) {}
+}
+function clearProfileData() {
+  try { localStorage.removeItem(PROFILE_KEY); } catch(_) {}
+}
 
 // ── DOM refs ───────────────────────────────────────────────
 const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done') };
@@ -998,6 +1099,74 @@ function showError(msg) {
   el.classList.add('visible');
   setTimeout(() => el.classList.remove('visible'), 5000);
 }
+
+// ── Profile modal ───────────────────────────────────────────
+const profileOverlay = $('profile-overlay');
+
+$('btn-profile').addEventListener('click', () => {
+  const p = loadProfile() || {};
+  $('inp-profile-name').value      = p.name || '';
+  $('inp-profile-duration').value  = p.photoDuration || 3;
+  $('val-profile-duration').textContent = p.photoDuration || 3;
+  $('inp-profile-fade').value      = p.fadeDuration || 0.8;
+  $('val-profile-fade').textContent = p.fadeDuration || 0.8;
+  $('inp-profile-resolution').value = p.resolution || '1280x720';
+  profileOverlay.classList.add('visible');
+});
+
+$('btn-profile-close').addEventListener('click', () => profileOverlay.classList.remove('visible'));
+profileOverlay.addEventListener('click', e => { if (e.target === profileOverlay) profileOverlay.classList.remove('visible'); });
+
+$('inp-profile-duration').addEventListener('input', e => { $('val-profile-duration').textContent = e.target.value; });
+$('inp-profile-fade').addEventListener('input', e => { $('val-profile-fade').textContent = e.target.value; });
+
+$('btn-profile-save').addEventListener('click', () => {
+  const data = {
+    name:          $('inp-profile-name').value.trim(),
+    photoDuration: parseFloat($('inp-profile-duration').value),
+    fadeDuration:  parseFloat($('inp-profile-fade').value),
+    resolution:    $('inp-profile-resolution').value,
+  };
+  saveProfileData(data);
+  applyProfile(data);
+  const toast = $('profile-saved-toast');
+  toast.classList.add('visible');
+  setTimeout(() => { toast.classList.remove('visible'); }, 1500);
+});
+
+$('btn-profile-clear').addEventListener('click', () => {
+  clearProfileData();
+  const defaults = { name: '', photoDuration: 3, fadeDuration: 0.8, resolution: '1280x720' };
+  applyProfile(defaults);
+  profileOverlay.classList.remove('visible');
+});
+
+function applyProfile(p) {
+  if (!p) return;
+  // Apply to main setup form
+  if (p.photoDuration != null) {
+    $('inp-duration').value = p.photoDuration;
+    $('val-duration').textContent = p.photoDuration;
+    settings.photoDuration = p.photoDuration;
+  }
+  if (p.fadeDuration != null) {
+    $('inp-fade').value = p.fadeDuration;
+    $('val-fade').textContent = p.fadeDuration;
+    settings.fadeDuration = p.fadeDuration;
+  }
+  if (p.resolution) {
+    $('inp-resolution').value = p.resolution;
+    const [w, h] = p.resolution.split('x').map(Number);
+    settings.width = w; settings.height = h;
+  }
+  // Auto-fill credits if empty
+  if (p.name && !$('inp-credits').value.trim()) {
+    $('inp-credits').value = p.name;
+  }
+}
+
+// ── Init: apply saved profile on load ───────────────────────
+applyProfile(loadProfile());
 
 </script>
 </body>
