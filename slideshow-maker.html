@@ -471,31 +471,24 @@
       margin-top: 4px;
     }
 
-    /* ── Preview screen ─────────────────────────────── */
-    .preview-controls {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 16px;
+    /* ── Status banner ──────────────────────────────── */
+    .status-banner {
+      position: fixed; top: 56px; left: 0; right: 0; z-index: 99;
+      text-align: center; padding: 10px 20px;
+      font-size: 11px; letter-spacing: 0.15em;
+      transform: translateY(-100%); opacity: 0;
+      transition: transform 0.4s, opacity 0.4s;
     }
-    .preview-controls .btn-play-pause {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--gold); border: none; color: #000;
-      font-size: 14px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+    .status-banner.visible {
+      transform: translateY(0); opacity: 1;
     }
-    .preview-controls .btn-play-pause:active { opacity: 0.75; }
-    .preview-controls .preview-scrubber {
-      flex: 1; -webkit-appearance: none; appearance: none;
-      height: 3px; background: var(--bg4); border-radius: 2px; outline: none;
+    .status-banner.encoding {
+      background: linear-gradient(90deg, var(--bg3) 0%, rgba(212,168,83,0.15) 50%, var(--bg3) 100%);
+      color: var(--gold); border-bottom: 1px solid var(--border);
     }
-    .preview-controls .preview-scrubber::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 14px; height: 14px; border-radius: 50%;
-      background: var(--gold); cursor: pointer;
-    }
-    .preview-time {
-      font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em;
-      min-width: 80px; text-align: right; flex-shrink: 0;
+    .status-banner.done {
+      background: linear-gradient(90deg, var(--bg3) 0%, rgba(212,168,83,0.2) 50%, var(--bg3) 100%);
+      color: var(--gold); border-bottom: 1px solid var(--gold);
     }
   </style>
 </head>
@@ -617,29 +610,9 @@
     </div>
 
     <div class="sep"></div>
-    <button class="btn-secondary" id="btn-preview" style="margin-bottom:12px">▶ &nbsp; プレビュー</button>
     <button class="btn-primary" id="btn-export">🎬 &nbsp; ビデオを作成する</button>
     <div id="estimate-info" class="estimate-info"></div>
   </div>
-</div>
-
-<!-- ── Screen: Preview ──────────────────────────── -->
-<div class="screen" id="screen-preview">
-  <div class="screen-title">プレビュー</div>
-  <div class="screen-sub">PREVIEW — NO ENCODING</div>
-
-  <div class="canvas-preview-wrap">
-    <canvas id="preview-canvas" width="1280" height="720"></canvas>
-  </div>
-
-  <div class="preview-controls">
-    <button class="btn-play-pause" id="btn-play-pause">▶</button>
-    <input type="range" class="preview-scrubber" id="preview-scrubber" min="0" max="1000" value="0">
-    <span class="preview-time" id="preview-time">0:00 / 0:00</span>
-  </div>
-
-  <div class="gap16"></div>
-  <button class="btn-secondary" id="btn-close-preview">← セットアップに戻る</button>
 </div>
 
 <!-- ── Screen 2: Encoding ────────────────────────── -->
@@ -690,11 +663,16 @@
     ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください
   </p>
   <div class="gap32"></div>
-  <button class="btn-secondary" id="btn-restart">← 新しく作る</button>
+  <button class="btn-secondary" id="btn-back-settings">← 設定を変更して再作成</button>
+  <div class="gap16"></div>
+  <button class="btn-secondary" id="btn-restart" style="color:var(--text-faint);border-color:var(--text-faint)">写真を変えて新しく作る</button>
 </div>
 
 <!-- Error toast -->
 <div id="error-toast"></div>
+
+<!-- Status banner -->
+<div class="status-banner" id="status-banner"></div>
 
 <!-- Profile modal -->
 <div class="profile-overlay" id="profile-overlay">
@@ -788,7 +766,7 @@ function clearProfileData() {
 }
 
 // ── DOM refs ───────────────────────────────────────────────
-const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done'), preview: $('screen-preview') };
+const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done') };
 const pills         = { 1: $('pill-1'), 2: $('pill-2'), 3: $('pill-3') };
 const fileInput     = $('file-input');
 const thumbArea     = $('thumbnail-area');
@@ -808,8 +786,18 @@ const downloadLink  = $('download-link');
 function $(id) { return document.getElementById(id); }
 
 // ── Screen transitions ────────────────────────────────────
+const statusBanner = $('status-banner');
+
+function showBanner(text, type) {
+  statusBanner.className = 'status-banner ' + type + ' visible';
+  statusBanner.textContent = text;
+}
+function hideBanner() {
+  statusBanner.classList.remove('visible');
+}
+
 function showScreen(name) {
-  const order = { setup: 1, preview: 1, encoding: 2, done: 3 };
+  const order = { setup: 1, encoding: 2, done: 3 };
   const n = order[name];
   Object.entries(screens).forEach(([key, el]) => {
     el.classList.toggle('visible', key === name);
@@ -819,6 +807,14 @@ function showScreen(name) {
     el.classList.toggle('active', ki === n);
     el.classList.toggle('done', ki < n);
   });
+  // Manage status banner
+  if (name === 'encoding') {
+    showBanner('🎬 エンコード中…', 'encoding');
+  } else if (name === 'done') {
+    showBanner('✓ 完成しました — ダウンロードできます', 'done');
+  } else {
+    hideBanner();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1094,6 +1090,13 @@ $('btn-cancel').addEventListener('click', () => {
   updateProgress(0);
 });
 
+// Back to settings — keep photos and settings, just go back to edit
+$('btn-back-settings').addEventListener('click', () => {
+  if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
+  showScreen('setup');
+});
+
+// Full restart — clear everything
 $('btn-restart').addEventListener('click', () => {
   if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
   photos = []; images = []; durations = []; orientations = [];
@@ -1615,136 +1618,6 @@ function showError(msg) {
   el.classList.add('visible');
   setTimeout(() => el.classList.remove('visible'), 5000);
 }
-
-// ── Preview ────────────────────────────────────────────��─────
-let previewPlaying = false;
-let previewRAF = null;
-let previewStartTime = 0;
-let previewCurrentTime = 0;
-let previewTimeline = null;
-let previewTotalDur = 0;
-const previewCanvas = $('preview-canvas');
-const previewCtx = previewCanvas.getContext('2d');
-const previewScrubber = $('preview-scrubber');
-const previewTimeDisplay = $('preview-time');
-const btnPlayPause = $('btn-play-pause');
-
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-function previewLoop(timestamp) {
-  if (!previewPlaying) return;
-  const elapsed = (timestamp - previewStartTime) / 1000;
-  previewCurrentTime = elapsed;
-  if (previewCurrentTime >= previewTotalDur) {
-    previewCurrentTime = previewTotalDur;
-    previewPlaying = false;
-    btnPlayPause.textContent = '▶';
-    renderPreviewAt(previewCurrentTime);
-    return;
-  }
-  renderPreviewAt(previewCurrentTime);
-  previewRAF = requestAnimationFrame(previewLoop);
-}
-
-function renderPreviewAt(time) {
-  const info = getFrameInfo(previewTimeline, Math.min(time, previewTotalDur - 0.001));
-  const { width, height } = settings;
-  previewCtx.clearRect(0, 0, width, height);
-  previewCtx.fillStyle = '#000';
-  previewCtx.fillRect(0, 0, width, height);
-
-  if (info.type === 'crossfade') {
-    renderPreviewLayer(info.from, width, height);
-    renderPreviewLayer(info.to, width, height);
-  } else if (info.type !== 'black' && info.alpha > 0) {
-    renderPreviewLayer(info, width, height);
-  }
-
-  previewScrubber.value = Math.round((time / previewTotalDur) * 1000);
-  previewTimeDisplay.textContent = `${formatTime(time)} / ${formatTime(previewTotalDur)}`;
-}
-
-function renderPreviewLayer(info, width, height) {
-  if (info.type === 'black' || info.alpha <= 0) return;
-  previewCtx.save();
-  previewCtx.globalAlpha = info.alpha;
-  if (info.type === 'photo') {
-    const img = images[info.idx];
-    if (img) drawImageCover(previewCtx, img, width, height, orientations[info.idx] || 1);
-  } else if (info.type === 'title') {
-    drawTitleCard(previewCtx, width, height);
-  } else if (info.type === 'credits') {
-    drawCreditsCard(previewCtx, width, height);
-  }
-  previewCtx.restore();
-}
-
-$('btn-preview').addEventListener('click', async () => {
-  if (!photos.length) { showError('写真を選択してください'); return; }
-  settings.title    = $('inp-title').value.trim() || 'Untitled';
-  settings.subtitle = $('inp-subtitle').value.trim();
-  settings.credits  = $('inp-credits').value.trim();
-
-  showScreen('preview');
-  const { width, height } = settings;
-  previewCanvas.width = width;
-  previewCanvas.height = height;
-
-  // Preload images if needed
-  if (!images.length || images.length !== photos.length) {
-    setStatus('写真を読み込み中...');
-    await preloadImages();
-  }
-
-  // Load fonts
-  await document.fonts.ready;
-  try {
-    await Promise.all([
-      document.fonts.load(`700 72px "Playfair Display"`),
-      document.fonts.load(`300 36px "IBM Plex Mono"`),
-    ]);
-  } catch(_) {}
-
-  previewTimeline = buildTimeline();
-  previewTotalDur = previewTimeline.totalDur;
-  previewCurrentTime = 0;
-  previewPlaying = false;
-  btnPlayPause.textContent = '▶';
-  renderPreviewAt(0);
-});
-
-btnPlayPause.addEventListener('click', () => {
-  if (previewPlaying) {
-    previewPlaying = false;
-    if (previewRAF) cancelAnimationFrame(previewRAF);
-    btnPlayPause.textContent = '▶';
-  } else {
-    if (previewCurrentTime >= previewTotalDur) previewCurrentTime = 0;
-    previewPlaying = true;
-    previewStartTime = performance.now() - previewCurrentTime * 1000;
-    btnPlayPause.textContent = '⏸';
-    previewRAF = requestAnimationFrame(previewLoop);
-  }
-});
-
-previewScrubber.addEventListener('input', e => {
-  const ratio = parseInt(e.target.value) / 1000;
-  previewCurrentTime = ratio * previewTotalDur;
-  if (previewPlaying) {
-    previewStartTime = performance.now() - previewCurrentTime * 1000;
-  }
-  renderPreviewAt(previewCurrentTime);
-});
-
-$('btn-close-preview').addEventListener('click', () => {
-  previewPlaying = false;
-  if (previewRAF) cancelAnimationFrame(previewRAF);
-  showScreen('setup');
-});
 
 // ── Profile modal ───────────────────────────────────────────
 const profileOverlay = $('profile-overlay');
