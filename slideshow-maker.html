@@ -523,7 +523,7 @@
 
   <!-- Upload zone -->
   <div class="upload-zone" id="upload-zone">
-    <input type="file" id="file-input" accept="image/*" multiple>
+    <input type="file" id="file-input" accept="image/*,.heic,.heif,.avif,.webp" multiple>
     <div class="upload-icon">🎞</div>
     <div class="upload-label">写真を選択する</div>
     <div class="upload-note">最大150枚 · JPEG / PNG / HEIC 対応</div>
@@ -827,8 +827,13 @@ function isImageFile(f) {
 }
 
 function handleFiles(files) {
-  const imgs = Array.from(files).filter(isImageFile);
-  if (!imgs.length) return;
+  const all = Array.from(files);
+  if (!all.length) return;
+  const imgs = all.filter(isImageFile);
+  if (!imgs.length) {
+    showError(`${all.length}件のファイルが選択されましたが、対応する画像ファイルが見つかりませんでした`);
+    return;
+  }
   if (imgs.length > 150) { showError('写真は最大150枚まで選択できます'); return; }
   photos = imgs;
   durations = photos.map(() => null);
