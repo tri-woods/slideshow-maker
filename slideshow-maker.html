@@ -556,18 +556,22 @@
   <div id="thumbnail-area">
     <div class="thumbnail-header">
       <span id="photo-count-label">0 枚選択済み</span>
-      <button class="btn-change" id="btn-change">変更する</button>
+      <div style="display:flex;gap:12px">
+        <button class="btn-change" id="btn-add">追加する</button>
+        <button class="btn-change" id="btn-change">変更する</button>
+      </div>
     </div>
+    <input type="file" id="file-input-add" accept="image/*,.heic,.heif,.avif,.webp" multiple style="display:none">
     <div class="thumbs-grid" id="thumbs-grid"></div>
   </div>
 
   <!-- Settings form -->
   <div id="settings-form">
     <div class="sep"></div>
-    <div class="form-section-title">TITLE CARD</div>
+    <div class="form-section-title">TITLE</div>
     <div class="toggle-field">
       <input type="checkbox" id="chk-show-title" checked>
-      <label for="chk-show-title">タイトルカードを表示</label>
+      <label for="chk-show-title">タイトル画面を表示</label>
     </div>
     <div class="card-fields" id="title-card-fields">
       <div class="field">
@@ -584,7 +588,7 @@
     <div class="form-section-title">CREDITS</div>
     <div class="toggle-field">
       <input type="checkbox" id="chk-show-credits" checked>
-      <label for="chk-show-credits">クレジットカードを表示</label>
+      <label for="chk-show-credits">クレジット画面を表示</label>
     </div>
     <div class="card-fields" id="credits-card-fields">
       <div class="field">
@@ -874,6 +878,32 @@ function handleFiles(files) {
 }
 
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+// Add more photos
+const fileInputAdd = $('file-input-add');
+$('btn-add').addEventListener('click', () => fileInputAdd.click());
+fileInputAdd.addEventListener('change', e => {
+  addFiles(e.target.files);
+  fileInputAdd.value = '';
+});
+
+function addFiles(files) {
+  const all = Array.from(files);
+  if (!all.length) return;
+  const imgs = all.filter(isImageFile);
+  if (!imgs.length) {
+    showError(`${all.length}件のファイルが選択されましたが、対応する画像ファイルが見つかりませんでした`);
+    return;
+  }
+  const total = photos.length + imgs.length;
+  if (total > 150) { showError(`写真は最大150枚まで（現在${photos.length}枚、追加${imgs.length}枚＝${total}枚）`); return; }
+  photos = [...photos, ...imgs];
+  durations = [...durations, ...imgs.map(() => null)];
+  orientations = [...orientations, ...imgs.map(() => 1)];
+  images = [...images, ...imgs.map(() => null)];
+  renderThumbs();
+  updateEstimate();
+}
 
 // Drag-and-drop
 const uploadZone = $('upload-zone');
