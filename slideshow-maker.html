@@ -15,9 +15,9 @@
       --bg2:       #0f0f0f;
       --bg3:       #171717;
       --bg4:       #1f1f1f;
-      --text:      #f0ebe2;
-      --text-dim:  #7a6e62;
-      --text-faint:#3a3530;
+      --text:      #ffffff;
+      --text-dim:  #b0a898;
+      --text-faint:#706860;
       --gold:      #d4a853;
       --gold-dim:  rgba(212,168,83,0.25);
       --gold-faint:rgba(212,168,83,0.08);
@@ -289,25 +289,23 @@
     }
 
     /* ── Screen 3: Done ──────────────────────────────────── */
+    #screen-done { padding-top: 70px; }
+    .done-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
     .done-check {
-      width: 64px; height: 64px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       border: 2px solid var(--gold);
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 32px;
-      animation: pulse-ring 2s ease-out forwards;
+      flex-shrink: 0;
     }
-    @keyframes pulse-ring {
-      0%   { box-shadow: 0 0 0 0 var(--gold-dim); }
-      100% { box-shadow: 0 0 0 20px transparent; }
-    }
-    .done-check svg { width: 28px; height: 28px; color: var(--gold); }
+    .done-check svg { width: 18px; height: 18px; color: var(--gold); }
     .done-title {
-      font-family: var(--serif); font-weight: 400; font-size: 32px;
-      text-align: center; margin-bottom: 8px;
+      font-family: var(--serif); font-weight: 400; font-size: 22px;
     }
     .done-sub {
       font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em;
-      text-align: center; margin-bottom: 36px;
     }
     #result-video {
       width: 100%; border-radius: 4px; margin-bottom: 24px;
@@ -645,13 +643,17 @@
 
 <!-- ── Screen 3: Done ────────────────────────────── -->
 <div class="screen" id="screen-done">
-  <div class="done-check">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
+  <div class="done-header">
+    <div class="done-check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div>
+      <div class="done-title">完成しました</div>
+      <div class="done-sub">SLIDESHOW VIDEO IS READY</div>
+    </div>
   </div>
-  <div class="done-title">完成しました</div>
-  <div class="done-sub">SLIDESHOW VIDEO IS READY</div>
 
   <video id="result-video" controls playsinline webkit-playsinline></video>
 
@@ -1500,8 +1502,10 @@ async function runExport() {
       coverData: coverBytes,
     });
 
-    // Codec support test
-    const codecId = 'avc1.42001f';
+    // Codec support test — pick correct H.264 level for resolution
+    const pixels = width * height;
+    const level = pixels > 1280 * 720 ? '28' : pixels > 854 * 480 ? '1f' : '1e';
+    const codecId = `avc1.4200${level}`;
     const supported = await VideoEncoder.isConfigSupported({
       codec: codecId, width, height
     });
