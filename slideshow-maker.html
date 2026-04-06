@@ -369,6 +369,131 @@
       opacity: 0; transition: opacity 0.3s;
     }
     .profile-saved-toast.visible { opacity: 1; }
+
+    /* ── Estimate info ─────────────────────────────────── */
+    .estimate-info {
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em;
+      text-align: center; margin-top: 14px;
+      display: none;
+    }
+
+    /* ── Checkbox toggle ───────────────────────────────── */
+    .toggle-field {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .toggle-field input[type=checkbox] {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; border: 1px solid var(--border);
+      border-radius: 3px; background: var(--bg3); cursor: pointer;
+      flex-shrink: 0; position: relative;
+    }
+    .toggle-field input[type=checkbox]:checked {
+      background: var(--gold); border-color: var(--gold);
+    }
+    .toggle-field input[type=checkbox]:checked::after {
+      content: '✓'; position: absolute; top: -1px; left: 2px;
+      font-size: 12px; color: #000;
+    }
+    .toggle-field label {
+      font-size: 10px; letter-spacing: 0.2em;
+      color: var(--text-dim); cursor: pointer;
+    }
+
+    /* ── Collapsible card fields ───────────────────────── */
+    .card-fields {
+      max-height: 500px; overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.3s ease;
+      opacity: 1;
+    }
+    .card-fields.collapsed {
+      max-height: 0; opacity: 0;
+    }
+
+    /* ── Per-photo duration badge ───────────────────── */
+    .thumb-wrap {
+      position: relative;
+    }
+    .thumb-wrap img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: 2px; display: block;
+    }
+    .dur-badge {
+      position: absolute; bottom: 2px; right: 2px;
+      background: rgba(0,0,0,0.7); border-radius: 3px;
+      padding: 1px 4px; cursor: pointer;
+      font-size: 10px; letter-spacing: 0.05em;
+      line-height: 1.4;
+      min-width: 28px; text-align: center;
+    }
+    .dur-badge.default { color: var(--text-dim); }
+    .dur-badge.override { color: var(--gold); }
+    .dur-badge-editor {
+      position: absolute; bottom: 2px; right: 2px;
+      display: flex; align-items: center; gap: 2px;
+      background: rgba(0,0,0,0.85); border-radius: 3px;
+      padding: 2px 3px;
+    }
+    .dur-badge-editor input {
+      width: 36px; background: var(--bg4); border: 1px solid var(--gold);
+      border-radius: 2px; color: var(--gold);
+      font-family: var(--mono); font-size: 10px;
+      padding: 1px 3px; text-align: center; outline: none;
+    }
+    .dur-badge-editor .dur-clear {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 11px; cursor: pointer; padding: 0 2px; line-height: 1;
+    }
+
+    /* ── Drag-to-reorder arrows ───────────────────── */
+    .thumb-wrap .thumb-arrows {
+      position: absolute; top: 2px; left: 2px; right: 2px;
+      display: flex; justify-content: space-between;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .thumb-wrap:hover .thumb-arrows,
+    .thumb-wrap:active .thumb-arrows { opacity: 1; pointer-events: all; }
+    .thumb-arrow {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,0.7); border: none;
+      color: var(--gold); font-size: 12px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .thumb-arrow:active { background: var(--gold); color: #000; }
+    .thumb-arrow.hidden { visibility: hidden; }
+    .reorder-hint {
+      font-size: 10px; color: var(--text-faint); letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+
+    /* ── Preview screen ─────────────────────────────── */
+    .preview-controls {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .preview-controls .btn-play-pause {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gold); border: none; color: #000;
+      font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .preview-controls .btn-play-pause:active { opacity: 0.75; }
+    .preview-controls .preview-scrubber {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 3px; background: var(--bg4); border-radius: 2px; outline: none;
+    }
+    .preview-controls .preview-scrubber::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--gold); cursor: pointer;
+    }
+    .preview-time {
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em;
+      min-width: 80px; text-align: right; flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -417,20 +542,32 @@
   <div id="settings-form">
     <div class="sep"></div>
     <div class="form-section-title">TITLE CARD</div>
-    <div class="field">
-      <label>タイトル</label>
-      <input type="text" id="inp-title" placeholder="例: Our Summer 2024">
+    <div class="toggle-field">
+      <input type="checkbox" id="chk-show-title" checked>
+      <label for="chk-show-title">タイトルカードを表示</label>
     </div>
-    <div class="field">
-      <label>サブタイトル</label>
-      <input type="text" id="inp-subtitle" placeholder="例: A Collection of Memories">
+    <div class="card-fields" id="title-card-fields">
+      <div class="field">
+        <label>タイトル</label>
+        <input type="text" id="inp-title" placeholder="例: Our Summer 2024">
+      </div>
+      <div class="field">
+        <label>サブタイトル</label>
+        <input type="text" id="inp-subtitle" placeholder="例: A Collection of Memories">
+      </div>
     </div>
 
     <div class="sep"></div>
     <div class="form-section-title">CREDITS</div>
-    <div class="field">
-      <label>クレジットテキスト（最後に表示）</label>
-      <textarea id="inp-credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
+    <div class="toggle-field">
+      <input type="checkbox" id="chk-show-credits" checked>
+      <label for="chk-show-credits">クレジットカードを表示</label>
+    </div>
+    <div class="card-fields" id="credits-card-fields">
+      <div class="field">
+        <label>クレジットテキスト（最後に表示）</label>
+        <textarea id="inp-credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
+      </div>
     </div>
 
     <div class="sep"></div>
@@ -450,17 +587,56 @@
       </div>
     </div>
     <div class="field">
+      <label>トランジション効果</label>
+      <select id="inp-transition">
+        <option value="fade-to-black">暗転（フェード・トゥ・ブラック）</option>
+        <option value="crossfade">クロスフェード（ディゾルブ）</option>
+      </select>
+    </div>
+    <div class="field">
       <label>解像度 / クオリティ</label>
       <select id="inp-resolution">
         <option value="1280x720">HD 720p (1280×720) — 推奨</option>
         <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
         <option value="1920x1080">Full HD 1080p (1920×1080)</option>
+        <option value="1080x1080">スクエア 1:1 (1080×1080)</option>
+        <option value="1080x1920">縦型 9:16 (1080×1920) — ストーリーズ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>フレームレート</label>
+      <select id="inp-fps">
+        <option value="12">12fps — 軽量</option>
+        <option value="15" selected>15fps — 標準</option>
+        <option value="24">24fps — シネマ</option>
+        <option value="30">30fps — スムーズ</option>
       </select>
     </div>
 
     <div class="sep"></div>
+    <button class="btn-secondary" id="btn-preview" style="margin-bottom:12px">▶ &nbsp; プレビュー</button>
     <button class="btn-primary" id="btn-export">🎬 &nbsp; ビデオを作成する</button>
+    <div id="estimate-info" class="estimate-info"></div>
   </div>
+</div>
+
+<!-- ── Screen: Preview ──────────────────────────── -->
+<div class="screen" id="screen-preview">
+  <div class="screen-title">プレビュー</div>
+  <div class="screen-sub">PREVIEW — NO ENCODING</div>
+
+  <div class="canvas-preview-wrap">
+    <canvas id="preview-canvas" width="1280" height="720"></canvas>
+  </div>
+
+  <div class="preview-controls">
+    <button class="btn-play-pause" id="btn-play-pause">▶</button>
+    <input type="range" class="preview-scrubber" id="preview-scrubber" min="0" max="1000" value="0">
+    <span class="preview-time" id="preview-time">0:00 / 0:00</span>
+  </div>
+
+  <div class="gap16"></div>
+  <button class="btn-secondary" id="btn-close-preview">← セットアップに戻る</button>
 </div>
 
 <!-- ── Screen 2: Encoding ────────────────────────── -->
@@ -550,6 +726,17 @@
         <option value="1280x720">HD 720p (1280×720) — 推奨</option>
         <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
         <option value="1920x1080">Full HD 1080p (1920×1080)</option>
+        <option value="1080x1080">スクエア 1:1 (1080×1080)</option>
+        <option value="1080x1920">縦型 9:16 (1080×1920) — ストーリーズ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>デフォルトフレームレート</label>
+      <select id="inp-profile-fps">
+        <option value="12">12fps — 軽量</option>
+        <option value="15" selected>15fps — 標準</option>
+        <option value="24">24fps — シネマ</option>
+        <option value="30">30fps — スムーズ</option>
       </select>
     </div>
     <div class="sep"></div>
@@ -563,8 +750,10 @@
 <script type="module">
 
 // ── State ──────────────────────────────────────────────────
-let photos   = [];   // File[]
-let images   = [];   // HTMLImageElement[]
+let photos       = [];   // File[]
+let images       = [];   // HTMLImageElement[]
+let durations    = [];   // (number|null)[] — per-photo duration overrides
+let orientations = [];   // number[] — EXIF orientation (1-8)
 let videoURL = null;
 let encodingAborted = false;
 let activeEncoder = null;
@@ -578,6 +767,9 @@ const settings = {
   width:  1280,
   height:  720,
   fps: 15,
+  showTitle: true,
+  showCredits: true,
+  transition: 'fade-to-black',
 };
 
 // ── Profile persistence ──────────────────────────────────────
@@ -593,7 +785,7 @@ function clearProfileData() {
 }
 
 // ── DOM refs ───────────────────────────────────────────────
-const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done') };
+const screens       = { setup: $('screen-setup'), encoding: $('screen-encoding'), done: $('screen-done'), preview: $('screen-preview') };
 const pills         = { 1: $('pill-1'), 2: $('pill-2'), 3: $('pill-3') };
 const fileInput     = $('file-input');
 const thumbArea     = $('thumbnail-area');
@@ -614,7 +806,7 @@ function $(id) { return document.getElementById(id); }
 
 // ── Screen transitions ────────────────────────────────────
 function showScreen(name) {
-  const order = { setup: 1, encoding: 2, done: 3 };
+  const order = { setup: 1, preview: 1, encoding: 2, done: 3 };
   const n = order[name];
   Object.entries(screens).forEach(([key, el]) => {
     el.classList.toggle('visible', key === name);
@@ -633,8 +825,11 @@ function handleFiles(files) {
   if (!imgs.length) return;
   if (imgs.length > 150) { showError('写真は最大150枚まで選択できます'); return; }
   photos = imgs;
+  durations = photos.map(() => null);
+  orientations = photos.map(() => 1);
   renderThumbs();
   settingsForm.style.display = 'block';
+  updateEstimate();
 }
 
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
@@ -659,14 +854,46 @@ function renderThumbs() {
   thumbURLs = [];
   photoCountLbl.textContent = `${photos.length} 枚選択済み`;
   thumbsGrid.innerHTML = '';
+  // Remove old reorder hint
+  const oldHint = thumbArea.querySelector('.reorder-hint');
+  if (oldHint) oldHint.remove();
   const show = Math.min(photos.length, 30);
   for (let i = 0; i < show; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'thumb-wrap';
     const img = document.createElement('img');
     const url = URL.createObjectURL(photos[i]);
     thumbURLs.push(url);
     img.src = url;
     img.loading = 'lazy';
-    thumbsGrid.appendChild(img);
+    wrap.appendChild(img);
+
+    // Reorder arrows
+    const arrows = document.createElement('div');
+    arrows.className = 'thumb-arrows';
+    const leftBtn = document.createElement('button');
+    leftBtn.className = 'thumb-arrow' + (i === 0 ? ' hidden' : '');
+    leftBtn.textContent = '◀';
+    leftBtn.addEventListener('click', e => { e.stopPropagation(); swapPhotos(i, i - 1); });
+    const rightBtn = document.createElement('button');
+    rightBtn.className = 'thumb-arrow' + (i === photos.length - 1 ? ' hidden' : '');
+    rightBtn.textContent = '▶';
+    rightBtn.addEventListener('click', e => { e.stopPropagation(); swapPhotos(i, i + 1); });
+    arrows.appendChild(leftBtn);
+    arrows.appendChild(rightBtn);
+    wrap.appendChild(arrows);
+
+    // Duration badge
+    const badge = document.createElement('div');
+    badge.className = 'dur-badge default';
+    badge.textContent = settings.photoDuration + 's';
+    badge.dataset.index = i;
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDurEditor(wrap, i, badge);
+    });
+    wrap.appendChild(badge);
+    thumbsGrid.appendChild(wrap);
   }
   if (photos.length > 30) {
     const more = document.createElement('div');
@@ -674,23 +901,159 @@ function renderThumbs() {
     more.textContent = `+${photos.length - 30}`;
     thumbsGrid.appendChild(more);
   }
+  if (photos.length > 1) {
+    const hint = document.createElement('div');
+    hint.className = 'reorder-hint';
+    hint.textContent = '◀ ▶ で並び替え';
+    thumbsGrid.parentElement.appendChild(hint);
+  }
   thumbArea.style.display = 'block';
+}
+
+function swapPhotos(i, j) {
+  if (j < 0 || j >= photos.length) return;
+  [photos[i], photos[j]] = [photos[j], photos[i]];
+  [durations[i], durations[j]] = [durations[j], durations[i]];
+  [orientations[i], orientations[j]] = [orientations[j], orientations[i]];
+  if (images[i] || images[j]) [images[i], images[j]] = [images[j], images[i]];
+  renderThumbs();
+  updateEstimate();
+}
+
+function openDurEditor(wrap, idx, badge) {
+  // Remove any existing editor
+  const existing = wrap.querySelector('.dur-badge-editor');
+  if (existing) { existing.remove(); badge.style.display = ''; return; }
+  badge.style.display = 'none';
+  const editor = document.createElement('div');
+  editor.className = 'dur-badge-editor';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.min = '1'; inp.max = '10'; inp.step = '0.5';
+  inp.value = durations[idx] != null ? durations[idx] : settings.photoDuration;
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'dur-clear';
+  clearBtn.textContent = '✕';
+  editor.appendChild(inp);
+  editor.appendChild(clearBtn);
+  wrap.appendChild(editor);
+  inp.focus();
+  inp.select();
+
+  function commit() {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v) && v >= 1 && v <= 10) {
+      durations[idx] = v;
+    }
+    close();
+  }
+  function clear() { durations[idx] = null; close(); }
+  function close() {
+    editor.remove();
+    refreshBadge(badge, idx);
+    badge.style.display = '';
+    updateEstimate();
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') close(); });
+  inp.addEventListener('blur', () => setTimeout(commit, 100));
+  clearBtn.addEventListener('click', (e) => { e.stopPropagation(); clear(); });
+}
+
+function refreshBadge(badge, idx) {
+  const override = durations[idx];
+  if (override != null) {
+    badge.className = 'dur-badge override';
+    badge.textContent = override + 's';
+  } else {
+    badge.className = 'dur-badge default';
+    badge.textContent = settings.photoDuration + 's';
+  }
+}
+
+function refreshAllBadges() {
+  thumbsGrid.querySelectorAll('.dur-badge').forEach(badge => {
+    const idx = parseInt(badge.dataset.index);
+    if (!isNaN(idx)) refreshBadge(badge, idx);
+  });
 }
 
 // ── Settings inputs ────────────────────────────────────────
 $('inp-duration').addEventListener('input', e => {
   $('val-duration').textContent = e.target.value;
   settings.photoDuration = parseFloat(e.target.value);
+  refreshAllBadges();
+  updateEstimate();
+});
+$('inp-transition').addEventListener('change', e => {
+  settings.transition = e.target.value;
+  updateEstimate();
 });
 $('inp-fade').addEventListener('input', e => {
   $('val-fade').textContent = e.target.value;
   settings.fadeDuration = parseFloat(e.target.value);
+  updateEstimate();
 });
 $('inp-resolution').addEventListener('change', e => {
   const [w, h] = e.target.value.split('x').map(Number);
   settings.width  = w;
   settings.height = h;
+  updateEstimate();
 });
+$('inp-fps').addEventListener('change', e => {
+  settings.fps = parseInt(e.target.value);
+  updateEstimate();
+});
+
+// Title / Credits toggles
+$('chk-show-title').addEventListener('change', e => {
+  settings.showTitle = e.target.checked;
+  $('title-card-fields').classList.toggle('collapsed', !e.target.checked);
+  updateEstimate();
+});
+$('chk-show-credits').addEventListener('change', e => {
+  settings.showCredits = e.target.checked;
+  $('credits-card-fields').classList.toggle('collapsed', !e.target.checked);
+  updateEstimate();
+});
+
+// Clipboard paste support
+document.addEventListener('paste', e => {
+  const files = [];
+  if (e.clipboardData.files && e.clipboardData.files.length) {
+    files.push(...e.clipboardData.files);
+  } else if (e.clipboardData.items) {
+    for (const item of e.clipboardData.items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        files.push(item.getAsFile());
+      }
+    }
+  }
+  if (files.length) {
+    e.preventDefault();
+    handleFiles(files);
+  }
+});
+
+// Estimate display
+function calcBitrate(w, fps) {
+  const base = w >= 1920 ? 3_500_000 : w >= 1280 ? 1_800_000 : 900_000;
+  return Math.round(base * (fps / 15));
+}
+
+function updateEstimate() {
+  const el = $('estimate-info');
+  if (!photos.length) { el.style.display = 'none'; return; }
+  const { fps, width } = settings;
+  const timeline = buildTimeline();
+  const totalDur = timeline.totalDur;
+  const totalFrames = Math.ceil(totalDur * fps);
+  const bitrate = calcBitrate(width, fps);
+  const sizeMb = Math.round(bitrate * totalDur / 8 / 1024 / 1024 * 10) / 10;
+  const mins = Math.floor(totalDur / 60);
+  const secs = Math.round(totalDur % 60);
+  const durStr = mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
+  el.textContent = `約 ${sizeMb} MB · ${durStr} · ${totalFrames} フレーム`;
+  el.style.display = 'block';
+}
 
 // ── Export button ─────────────────────────────────────────
 $('btn-export').addEventListener('click', async () => {
@@ -700,6 +1063,7 @@ $('btn-export').addEventListener('click', async () => {
   settings.credits  = $('inp-credits').value.trim();
   settings.photoDuration = parseFloat($('inp-duration').value);
   settings.fadeDuration  = parseFloat($('inp-fade').value);
+  settings.transition    = $('inp-transition').value;
   const [w, h] = $('inp-resolution').value.split('x').map(Number);
   settings.width = w; settings.height = h;
   await runExport();
@@ -718,7 +1082,7 @@ $('btn-cancel').addEventListener('click', () => {
 
 $('btn-restart').addEventListener('click', () => {
   if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
-  photos = []; images = [];
+  photos = []; images = []; durations = []; orientations = [];
   thumbsGrid.innerHTML = '';
   thumbArea.style.display = 'none';
   settingsForm.style.display = 'none';
@@ -728,30 +1092,69 @@ $('btn-restart').addEventListener('click', () => {
 
 // ── Timeline ───────────────────────────────────────────────
 function buildTimeline() {
-  const { photoDuration, fadeDuration } = settings;
+  const { photoDuration, fadeDuration, transition } = settings;
+  const isCrossfade = transition === 'crossfade';
   const segs = [];
   let t = 0;
 
-  const titleDur = 1 + 2.5 + 1;  // fadein + hold + fadeout
-  segs.push({ type: 'title', start: t, dur: titleDur, fi: 1, fo: 1 });
-  t += titleDur;
-
-  for (let i = 0; i < photos.length; i++) {
-    const dur = fadeDuration + photoDuration + fadeDuration;
-    segs.push({ type: 'photo', idx: i, start: t, dur, fi: fadeDuration, fo: fadeDuration });
-    t += dur;
+  if (settings.showTitle) {
+    const titleDur = 1 + 2.5 + 1;  // fadein + hold + fadeout
+    segs.push({ type: 'title', start: t, dur: titleDur, fi: 1, fo: 1 });
+    t += titleDur;
   }
 
-  const creditsDur = 1 + 3 + 1;
-  segs.push({ type: 'credits', start: t, dur: creditsDur, fi: 1, fo: 1 });
-  t += creditsDur;
+  for (let i = 0; i < photos.length; i++) {
+    const pd = durations[i] ?? photoDuration;
+    const dur = fadeDuration + pd + fadeDuration;
+    segs.push({ type: 'photo', idx: i, start: t, dur, fi: fadeDuration, fo: fadeDuration });
+    if (isCrossfade && i < photos.length - 1) {
+      t += pd + fadeDuration;  // overlap by fadeDuration
+    } else {
+      t += dur;
+    }
+  }
+
+  if (settings.showCredits) {
+    const creditsDur = 1 + 3 + 1;
+    segs.push({ type: 'credits', start: t, dur: creditsDur, fi: 1, fo: 1 });
+    t += creditsDur;
+  }
 
   return { segs, totalDur: t };
 }
 
 function getFrameInfo(timeline, time) {
-  // Binary search for the segment containing this time
   const segs = timeline.segs;
+  const isCrossfade = settings.transition === 'crossfade';
+
+  // In crossfade mode, check for overlapping photo segments
+  if (isCrossfade) {
+    const overlapping = [];
+    for (let i = 0; i < segs.length; i++) {
+      const s = segs[i];
+      if (time >= s.start && time < s.start + s.dur) {
+        const rel = time - s.start;
+        let alpha;
+        if      (rel < s.fi)               alpha = rel / s.fi;
+        else if (rel > s.dur - s.fo)       alpha = (s.dur - rel) / s.fo;
+        else                               alpha = 1;
+        overlapping.push({ type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)) });
+      } else if (s.start > time) {
+        break;  // segments are ordered by start time
+      }
+    }
+    if (overlapping.length >= 2) {
+      return {
+        type: 'crossfade',
+        from: overlapping[0],
+        to: overlapping[1],
+      };
+    }
+    if (overlapping.length === 1) return overlapping[0];
+    return { type: 'black', idx: -1, alpha: 0 };
+  }
+
+  // Fade-to-black mode: binary search
   let lo = 0, hi = segs.length - 1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
@@ -776,14 +1179,27 @@ function renderFrame(info) {
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, width, height);
-  if (info.type === 'black' || info.alpha <= 0) return;
 
+  if (info.type === 'crossfade') {
+    // Draw "from" image
+    renderSingleLayer(info.from, width, height);
+    // Draw "to" image on top
+    renderSingleLayer(info.to, width, height);
+    return;
+  }
+
+  if (info.type === 'black' || info.alpha <= 0) return;
+  renderSingleLayer(info, width, height);
+}
+
+function renderSingleLayer(info, width, height) {
+  if (info.type === 'black' || info.alpha <= 0) return;
   ctx.save();
   ctx.globalAlpha = info.alpha;
 
   if (info.type === 'photo') {
     const img = images[info.idx];
-    if (img) drawImageCover(ctx, img, width, height);
+    if (img) drawImageCover(ctx, img, width, height, orientations[info.idx] || 1);
   } else if (info.type === 'title') {
     drawTitleCard(ctx, width, height);
   } else if (info.type === 'credits') {
@@ -793,11 +1209,39 @@ function renderFrame(info) {
   ctx.restore();
 }
 
-function drawImageCover(ctx, img, W, H) {
-  const scale = Math.min(W / img.naturalWidth, H / img.naturalHeight);
-  const sw = img.naturalWidth * scale;
-  const sh = img.naturalHeight * scale;
-  ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
+function drawImageCover(ctx, img, W, H, orientation) {
+  const o = orientation || 1;
+  let nw = img.naturalWidth, nh = img.naturalHeight;
+  // For 90/270 rotations, swap effective dimensions
+  const swapped = (o === 6 || o === 8 || o === 5 || o === 7);
+  const ew = swapped ? nh : nw;
+  const eh = swapped ? nw : nh;
+  const scale = Math.min(W / ew, H / eh);
+  const sw = ew * scale;
+  const sh = eh * scale;
+  const dx = (W - sw) / 2;
+  const dy = (H - sh) / 2;
+
+  ctx.save();
+  ctx.translate(dx + sw / 2, dy + sh / 2);
+
+  switch (o) {
+    case 2: ctx.scale(-1, 1); break;
+    case 3: ctx.rotate(Math.PI); break;
+    case 4: ctx.scale(1, -1); break;
+    case 5: ctx.rotate(Math.PI / 2); ctx.scale(-1, 1); break;
+    case 6: ctx.rotate(Math.PI / 2); break;
+    case 7: ctx.rotate(-Math.PI / 2); ctx.scale(-1, 1); break;
+    case 8: ctx.rotate(-Math.PI / 2); break;
+  }
+
+  // Draw centered at origin; for swapped orientations, the image dimensions are swapped
+  if (swapped) {
+    ctx.drawImage(img, -sh / 2, -sw / 2, sh, sw);
+  } else {
+    ctx.drawImage(img, -sw / 2, -sh / 2, sw, sh);
+  }
+  ctx.restore();
 }
 
 function drawTitleCard(ctx, W, H) {
@@ -886,6 +1330,59 @@ function wrapText(ctx, text, x, y, maxW, lineH) {
   ctx.fillText(line, x, lineY);
 }
 
+// ── EXIF orientation parsing ──────────────────────────────
+function readExifOrientation(file) {
+  return new Promise(resolve => {
+    if (!file.type || (!file.type.includes('jpeg') && !file.type.includes('jpg'))) {
+      resolve(1);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const view = new DataView(e.target.result);
+        // Check JPEG SOI marker
+        if (view.getUint16(0) !== 0xFFD8) { resolve(1); return; }
+        let offset = 2;
+        while (offset < view.byteLength - 2) {
+          const marker = view.getUint16(offset);
+          offset += 2;
+          if (marker === 0xFFE1) { // APP1
+            const length = view.getUint16(offset);
+            // Check "Exif\0\0"
+            if (view.getUint32(offset + 2) === 0x45786966 && view.getUint16(offset + 6) === 0x0000) {
+              const tiffStart = offset + 8;
+              const endian = view.getUint16(tiffStart);
+              const le = endian === 0x4949;
+              const ifdOffset = view.getUint32(tiffStart + 4, le);
+              const ifdStart = tiffStart + ifdOffset;
+              const entries = view.getUint16(ifdStart, le);
+              for (let i = 0; i < entries; i++) {
+                const entryOff = ifdStart + 2 + i * 12;
+                if (entryOff + 12 > view.byteLength) break;
+                const tag = view.getUint16(entryOff, le);
+                if (tag === 0x0112) { // Orientation
+                  resolve(view.getUint16(entryOff + 8, le));
+                  return;
+                }
+              }
+            }
+            resolve(1);
+            return;
+          } else if ((marker & 0xFF00) === 0xFF00) {
+            offset += view.getUint16(offset);
+          } else {
+            break;
+          }
+        }
+        resolve(1);
+      } catch(_) { resolve(1); }
+    };
+    reader.onerror = () => resolve(1);
+    reader.readAsArrayBuffer(file.slice(0, 65536));
+  });
+}
+
 // ── Image preloading (parallel with concurrency limit) ─────
 async function preloadImages() {
   images = new Array(photos.length).fill(null);
@@ -893,6 +1390,9 @@ async function preloadImages() {
   const CONCURRENCY = 8;
 
   async function loadOne(i) {
+    // Read EXIF orientation first
+    orientations[i] = await readExifOrientation(photos[i]);
+
     const im = new Image();
     const url = URL.createObjectURL(photos[i]);
     images[i] = await new Promise(res => {
@@ -999,7 +1499,7 @@ async function runExport() {
     encoder.configure({
       codec:       codecId,
       width, height,
-      bitrate:     width >= 1920 ? 3_500_000 : width >= 1280 ? 1_800_000 : 900_000,
+      bitrate:     calcBitrate(width, fps),
       framerate:   fps,
       latencyMode: 'quality',
     });
@@ -1022,7 +1522,7 @@ async function runExport() {
       const info    = getFrameInfo(timeline, timeSec);
 
       // Skip canvas re-render if same content at full opacity (hold portion)
-      needsRender = !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
+      needsRender = info.type === 'crossfade' || !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
       if (needsRender) {
         renderFrame(info);
         prevType = info.type;
@@ -1100,6 +1600,136 @@ function showError(msg) {
   setTimeout(() => el.classList.remove('visible'), 5000);
 }
 
+// ── Preview ────────────────────────────────────────────��─────
+let previewPlaying = false;
+let previewRAF = null;
+let previewStartTime = 0;
+let previewCurrentTime = 0;
+let previewTimeline = null;
+let previewTotalDur = 0;
+const previewCanvas = $('preview-canvas');
+const previewCtx = previewCanvas.getContext('2d');
+const previewScrubber = $('preview-scrubber');
+const previewTimeDisplay = $('preview-time');
+const btnPlayPause = $('btn-play-pause');
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function previewLoop(timestamp) {
+  if (!previewPlaying) return;
+  const elapsed = (timestamp - previewStartTime) / 1000;
+  previewCurrentTime = elapsed;
+  if (previewCurrentTime >= previewTotalDur) {
+    previewCurrentTime = previewTotalDur;
+    previewPlaying = false;
+    btnPlayPause.textContent = '▶';
+    renderPreviewAt(previewCurrentTime);
+    return;
+  }
+  renderPreviewAt(previewCurrentTime);
+  previewRAF = requestAnimationFrame(previewLoop);
+}
+
+function renderPreviewAt(time) {
+  const info = getFrameInfo(previewTimeline, Math.min(time, previewTotalDur - 0.001));
+  const { width, height } = settings;
+  previewCtx.clearRect(0, 0, width, height);
+  previewCtx.fillStyle = '#000';
+  previewCtx.fillRect(0, 0, width, height);
+
+  if (info.type === 'crossfade') {
+    renderPreviewLayer(info.from, width, height);
+    renderPreviewLayer(info.to, width, height);
+  } else if (info.type !== 'black' && info.alpha > 0) {
+    renderPreviewLayer(info, width, height);
+  }
+
+  previewScrubber.value = Math.round((time / previewTotalDur) * 1000);
+  previewTimeDisplay.textContent = `${formatTime(time)} / ${formatTime(previewTotalDur)}`;
+}
+
+function renderPreviewLayer(info, width, height) {
+  if (info.type === 'black' || info.alpha <= 0) return;
+  previewCtx.save();
+  previewCtx.globalAlpha = info.alpha;
+  if (info.type === 'photo') {
+    const img = images[info.idx];
+    if (img) drawImageCover(previewCtx, img, width, height, orientations[info.idx] || 1);
+  } else if (info.type === 'title') {
+    drawTitleCard(previewCtx, width, height);
+  } else if (info.type === 'credits') {
+    drawCreditsCard(previewCtx, width, height);
+  }
+  previewCtx.restore();
+}
+
+$('btn-preview').addEventListener('click', async () => {
+  if (!photos.length) { showError('写真を選択してください'); return; }
+  settings.title    = $('inp-title').value.trim() || 'Untitled';
+  settings.subtitle = $('inp-subtitle').value.trim();
+  settings.credits  = $('inp-credits').value.trim();
+
+  showScreen('preview');
+  const { width, height } = settings;
+  previewCanvas.width = width;
+  previewCanvas.height = height;
+
+  // Preload images if needed
+  if (!images.length || images.length !== photos.length) {
+    setStatus('写真を読み込み中...');
+    await preloadImages();
+  }
+
+  // Load fonts
+  await document.fonts.ready;
+  try {
+    await Promise.all([
+      document.fonts.load(`700 72px "Playfair Display"`),
+      document.fonts.load(`300 36px "IBM Plex Mono"`),
+    ]);
+  } catch(_) {}
+
+  previewTimeline = buildTimeline();
+  previewTotalDur = previewTimeline.totalDur;
+  previewCurrentTime = 0;
+  previewPlaying = false;
+  btnPlayPause.textContent = '▶';
+  renderPreviewAt(0);
+});
+
+btnPlayPause.addEventListener('click', () => {
+  if (previewPlaying) {
+    previewPlaying = false;
+    if (previewRAF) cancelAnimationFrame(previewRAF);
+    btnPlayPause.textContent = '▶';
+  } else {
+    if (previewCurrentTime >= previewTotalDur) previewCurrentTime = 0;
+    previewPlaying = true;
+    previewStartTime = performance.now() - previewCurrentTime * 1000;
+    btnPlayPause.textContent = '⏸';
+    previewRAF = requestAnimationFrame(previewLoop);
+  }
+});
+
+previewScrubber.addEventListener('input', e => {
+  const ratio = parseInt(e.target.value) / 1000;
+  previewCurrentTime = ratio * previewTotalDur;
+  if (previewPlaying) {
+    previewStartTime = performance.now() - previewCurrentTime * 1000;
+  }
+  renderPreviewAt(previewCurrentTime);
+});
+
+$('btn-close-preview').addEventListener('click', () => {
+  previewPlaying = false;
+  if (previewRAF) cancelAnimationFrame(previewRAF);
+  showScreen('setup');
+});
+
 // ── Profile modal ───────────────────────────────────────────
 const profileOverlay = $('profile-overlay');
 
@@ -1111,6 +1741,7 @@ $('btn-profile').addEventListener('click', () => {
   $('inp-profile-fade').value      = p.fadeDuration || 0.8;
   $('val-profile-fade').textContent = p.fadeDuration || 0.8;
   $('inp-profile-resolution').value = p.resolution || '1280x720';
+  $('inp-profile-fps').value = p.fps || 15;
   profileOverlay.classList.add('visible');
 });
 
@@ -1126,6 +1757,7 @@ $('btn-profile-save').addEventListener('click', () => {
     photoDuration: parseFloat($('inp-profile-duration').value),
     fadeDuration:  parseFloat($('inp-profile-fade').value),
     resolution:    $('inp-profile-resolution').value,
+    fps:           parseInt($('inp-profile-fps').value),
   };
   saveProfileData(data);
   applyProfile(data);
@@ -1136,7 +1768,7 @@ $('btn-profile-save').addEventListener('click', () => {
 
 $('btn-profile-clear').addEventListener('click', () => {
   clearProfileData();
-  const defaults = { name: '', photoDuration: 3, fadeDuration: 0.8, resolution: '1280x720' };
+  const defaults = { name: '', photoDuration: 3, fadeDuration: 0.8, resolution: '1280x720', fps: 15 };
   applyProfile(defaults);
   profileOverlay.classList.remove('visible');
 });
@@ -1158,6 +1790,11 @@ function applyProfile(p) {
     $('inp-resolution').value = p.resolution;
     const [w, h] = p.resolution.split('x').map(Number);
     settings.width = w; settings.height = h;
+  }
+  if (p.fps) {
+    $('inp-fps').value = p.fps;
+    settings.fps = p.fps;
+    if ($('inp-profile-fps')) $('inp-profile-fps').value = p.fps;
   }
   // Auto-fill credits if empty
   if (p.name && !$('inp-credits').value.trim()) {
