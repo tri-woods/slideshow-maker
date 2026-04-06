@@ -820,8 +820,14 @@ function showScreen(name) {
 }
 
 // ── File handling ─────────────────────────────────────────
+function isImageFile(f) {
+  if (f.type && f.type.startsWith('image/')) return true;
+  const ext = f.name.split('.').pop().toLowerCase();
+  return ['jpg','jpeg','png','gif','webp','heic','heif','bmp','tiff','tif','svg','avif'].includes(ext);
+}
+
 function handleFiles(files) {
-  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  const imgs = Array.from(files).filter(isImageFile);
   if (!imgs.length) return;
   if (imgs.length > 150) { showError('写真は最大150枚まで選択できます'); return; }
   photos = imgs;
@@ -1022,7 +1028,7 @@ document.addEventListener('paste', e => {
     files.push(...e.clipboardData.files);
   } else if (e.clipboardData.items) {
     for (const item of e.clipboardData.items) {
-      if (item.kind === 'file' && item.type.startsWith('image/')) {
+      if (item.kind === 'file' && (item.type.startsWith('image/') || !item.type)) {
         files.push(item.getAsFile());
       }
     }
@@ -1333,7 +1339,9 @@ function wrapText(ctx, text, x, y, maxW, lineH) {
 // ── EXIF orientation parsing ──────────────────────────────
 function readExifOrientation(file) {
   return new Promise(resolve => {
-    if (!file.type || (!file.type.includes('jpeg') && !file.type.includes('jpg'))) {
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+    const isJpeg = (file.type && (file.type.includes('jpeg') || file.type.includes('jpg'))) || ext === 'jpg' || ext === 'jpeg';
+    if (!isJpeg) {
       resolve(1);
       return;
     }
