@@ -784,6 +784,8 @@ let durations    = [];   // (number|null)[] — per-photo duration overrides
 let orientations = [];   // number[] — EXIF orientation (1-8)
 let videoURL = null;
 let encodingAborted = false;
+let encodingError = null;
+let exporting = false;
 let activeEncoder = null;
 
 const settings = {
@@ -1185,6 +1187,8 @@ $('btn-cancel').addEventListener('click', () => {
     try { activeEncoder.close(); } catch(_) {}
     activeEncoder = null;
   }
+  exporting = false;
+  $('btn-export').disabled = false;
   showScreen('setup');
   setStatus('準備中...');
   updateProgress(0);
@@ -1199,6 +1203,7 @@ $('btn-back-settings').addEventListener('click', () => {
 // Full restart — clear everything
 $('btn-restart').addEventListener('click', () => {
   if (videoURL) { URL.revokeObjectURL(videoURL); videoURL = null; }
+  thumbURLs.forEach(u => URL.revokeObjectURL(u)); thumbURLs = [];
   photos = []; images = []; durations = []; orientations = [];
   thumbsGrid.innerHTML = '';
   thumbArea.style.display = 'none';
@@ -1384,15 +1389,15 @@ function drawTitleCard(ctx, W, H) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   wrapText(ctx, settings.title, W / 2, lineY + titleSize * 0.6, W * 0.78, titleSize * 1.35);
+  // Measure title line count while title font is still active
+  const titleLineCount = Math.ceil(ctx.measureText(settings.title).width / (W * 0.78)) || 1;
 
   // Subtitle
   if (settings.subtitle) {
     const subSize = Math.round(W / 52);
     ctx.font      = `300 ${subSize}px "IBM Plex Mono", monospace`;
     ctx.fillStyle = '#e0b45c';
-    // Estimate title block height
-    const titleLines = Math.ceil(ctx.measureText(settings.title).width / (W * 0.78)) || 1;
-    const subY = lineY + titleSize * 0.6 + titleLines * titleSize * 1.35 + subSize * 1.2;
+    const subY = lineY + titleSize * 0.6 + titleLineCount * titleSize * 1.35 + subSize * 1.2;
     ctx.fillText(settings.subtitle.toUpperCase(), W / 2, subY);
   }
 
@@ -1502,43 +1507,67 @@ function readExifOrientation(file) {
   });
 }
 
-// ── Image preloading (parallel with concurrency limit) ─────
+// ── Image loading (lazy with sliding window) ──────────────
 async function preloadImages() {
   images = new Array(photos.length).fill(null);
-  let loaded = 0;
   const CONCURRENCY = 8;
 
-  async function loadOne(i) {
-    // Read EXIF orientation first
+  // Step 1: Read EXIF orientations for all photos (lightweight — just first 64KB)
+  let exifDone = 0;
+  async function readExif(i) {
     orientations[i] = await readExifOrientation(photos[i]);
-
-    const im = new Image();
-    const url = URL.createObjectURL(photos[i]);
-    images[i] = await new Promise(res => {
-      im.onload  = () => { URL.revokeObjectURL(url); res(im); };
-      im.onerror = () => { URL.revokeObjectURL(url); res(null); };
-      im.src = url;
-    });
-    loaded++;
-    setStatus(`写真を読み込み中… ${loaded} / ${photos.length}`);
-    updateProgress(loaded / photos.length * 0.15);
+    exifDone++;
+    setStatus(`EXIF情報を読み取り中… ${exifDone} / ${photos.length}`);
+    updateProgress(exifDone / photos.length * 0.08);
   }
 
-  // Process in chunks of CONCURRENCY
   for (let i = 0; i < photos.length; i += CONCURRENCY) {
     const batch = [];
     for (let j = i; j < Math.min(i + CONCURRENCY, photos.length); j++) {
-      batch.push(loadOne(j));
+      batch.push(readExif(j));
     }
     await Promise.all(batch);
     if (encodingAborted) return;
+  }
+
+  // Step 2: Pre-load only the first few images so encoding can start quickly
+  const preloadCount = Math.min(5, photos.length);
+  for (let i = 0; i < preloadCount; i++) {
+    await ensureImageLoaded(i);
+    if (encodingAborted) return;
+  }
+  setStatus(`写真の準備完了（${preloadCount}枚先読み済み）`);
+  updateProgress(0.15);
+}
+
+async function ensureImageLoaded(idx) {
+  if (idx < 0 || idx >= photos.length) return;
+  if (images[idx]) return;
+  const im = new Image();
+  const url = URL.createObjectURL(photos[idx]);
+  images[idx] = await new Promise(res => {
+    im.onload  = () => { URL.revokeObjectURL(url); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    im.src = url;
+  });
+}
+
+function evictDistantImages(currentIdx, keepRadius) {
+  for (let i = 0; i < images.length; i++) {
+    if (images[i] && Math.abs(i - currentIdx) > keepRadius) {
+      images[i] = null;
+    }
   }
 }
 
 // ── Main encode ────────────────────────────────────────────
 async function runExport() {
+  if (exporting) return;
+  exporting = true;
+  $('btn-export').disabled = true;
   showScreen('encoding');
   encodingAborted = false;
+  encodingError = null;
 
   // WebCodecs check
   if (!('VideoEncoder' in window)) {
@@ -1614,7 +1643,7 @@ async function runExport() {
     // Setup encoder
     const encoder = new VideoEncoder({
       output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
-      error:  (e) => { throw e; },
+      error:  (e) => { encodingError = e; },
     });
     activeEncoder = encoder;
     encoder.configure({
@@ -1630,8 +1659,10 @@ async function runExport() {
     const startMs = Date.now();
     let lastKeyframe = -999;
     let prevType = null, prevIdx = -1, needsRender = true;
+    let currentPhotoIdx = 0;
 
     for (let fi = 0; fi < totalFrames; fi++) {
+      if (encodingError) throw encodingError;
       if (encodingAborted) return;
 
       // Back-pressure
@@ -1641,6 +1672,19 @@ async function runExport() {
 
       const timeSec = fi / fps;
       const info    = getFrameInfo(timeline, timeSec);
+
+      // Lazy-load images on demand and evict distant ones to save memory
+      if (info.type === 'photo') {
+        await ensureImageLoaded(info.idx);
+        currentPhotoIdx = info.idx;
+      } else if (info.type === 'crossfade') {
+        if (info.from.type === 'photo') await ensureImageLoaded(info.from.idx);
+        if (info.to.type === 'photo') await ensureImageLoaded(info.to.idx);
+        currentPhotoIdx = info.to.type === 'photo' ? info.to.idx : (info.from.type === 'photo' ? info.from.idx : currentPhotoIdx);
+      }
+      if (fi % 15 === 0) {
+        evictDistantImages(currentPhotoIdx, 3);
+      }
 
       // Skip canvas re-render if same content at full opacity (hold portion)
       needsRender = info.type === 'crossfade' || !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
@@ -1702,6 +1746,8 @@ async function runExport() {
     showScreen('setup');
   } finally {
     activeEncoder = null;
+    exporting = false;
+    $('btn-export').disabled = false;
   }
 }
 
