@@ -781,7 +781,7 @@
 let photos       = [];   // File[]
 let images       = [];   // HTMLImageElement[]
 let durations    = [];   // (number|null)[] — per-photo duration overrides
-let orientations = [];   // number[] — EXIF orientation (1-8)
+let orientations = [];   // kept for array-index parity with photos/durations
 let videoURL = null;
 let encodingAborted = false;
 let encodingError = null;
@@ -1321,7 +1321,7 @@ function renderSingleLayer(info, width, height) {
 
   if (info.type === 'photo') {
     const img = images[info.idx];
-    if (img) drawImageCover(ctx, img, width, height, orientations[info.idx] || 1);
+    if (img) drawImageCover(ctx, img, width, height);
   } else if (info.type === 'title') {
     drawTitleCard(ctx, width, height);
   } else if (info.type === 'credits') {
@@ -1331,39 +1331,14 @@ function renderSingleLayer(info, width, height) {
   ctx.restore();
 }
 
-function drawImageCover(ctx, img, W, H, orientation) {
-  const o = orientation || 1;
-  let nw = img.naturalWidth, nh = img.naturalHeight;
-  // For 90/270 rotations, swap effective dimensions
-  const swapped = (o === 6 || o === 8 || o === 5 || o === 7);
-  const ew = swapped ? nh : nw;
-  const eh = swapped ? nw : nh;
-  const scale = Math.min(W / ew, H / eh);
-  const sw = ew * scale;
-  const sh = eh * scale;
-  const dx = (W - sw) / 2;
-  const dy = (H - sh) / 2;
-
-  ctx.save();
-  ctx.translate(dx + sw / 2, dy + sh / 2);
-
-  switch (o) {
-    case 2: ctx.scale(-1, 1); break;
-    case 3: ctx.rotate(Math.PI); break;
-    case 4: ctx.scale(1, -1); break;
-    case 5: ctx.rotate(Math.PI / 2); ctx.scale(-1, 1); break;
-    case 6: ctx.rotate(Math.PI / 2); break;
-    case 7: ctx.rotate(-Math.PI / 2); ctx.scale(-1, 1); break;
-    case 8: ctx.rotate(-Math.PI / 2); break;
-  }
-
-  // Draw centered at origin; for swapped orientations, the image dimensions are swapped
-  if (swapped) {
-    ctx.drawImage(img, -sh / 2, -sw / 2, sh, sw);
-  } else {
-    ctx.drawImage(img, -sw / 2, -sh / 2, sw, sh);
-  }
-  ctx.restore();
+function drawImageCover(ctx, img, W, H) {
+  // Modern browsers (Safari 13.1+, Chrome 81+) auto-apply EXIF orientation,
+  // so naturalWidth/Height already reflect the correctly oriented dimensions.
+  // No manual rotation needed.
+  const scale = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+  const sw = img.naturalWidth * scale;
+  const sh = img.naturalHeight * scale;
+  ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
 }
 
 function drawTitleCard(ctx, W, H) {
@@ -1452,88 +1427,18 @@ function wrapText(ctx, text, x, y, maxW, lineH) {
   ctx.fillText(line, x, lineY);
 }
 
-// ── EXIF orientation parsing ──────────────────────────────
-function readExifOrientation(file) {
-  return new Promise(resolve => {
-    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
-    const isJpeg = (file.type && (file.type.includes('jpeg') || file.type.includes('jpg'))) || ext === 'jpg' || ext === 'jpeg';
-    if (!isJpeg) {
-      resolve(1);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const view = new DataView(e.target.result);
-        // Check JPEG SOI marker
-        if (view.getUint16(0) !== 0xFFD8) { resolve(1); return; }
-        let offset = 2;
-        while (offset < view.byteLength - 2) {
-          const marker = view.getUint16(offset);
-          offset += 2;
-          if (marker === 0xFFE1) { // APP1
-            const length = view.getUint16(offset);
-            // Check "Exif\0\0"
-            if (view.getUint32(offset + 2) === 0x45786966 && view.getUint16(offset + 6) === 0x0000) {
-              const tiffStart = offset + 8;
-              const endian = view.getUint16(tiffStart);
-              const le = endian === 0x4949;
-              const ifdOffset = view.getUint32(tiffStart + 4, le);
-              const ifdStart = tiffStart + ifdOffset;
-              const entries = view.getUint16(ifdStart, le);
-              for (let i = 0; i < entries; i++) {
-                const entryOff = ifdStart + 2 + i * 12;
-                if (entryOff + 12 > view.byteLength) break;
-                const tag = view.getUint16(entryOff, le);
-                if (tag === 0x0112) { // Orientation
-                  resolve(view.getUint16(entryOff + 8, le));
-                  return;
-                }
-              }
-            }
-            resolve(1);
-            return;
-          } else if ((marker & 0xFF00) === 0xFF00) {
-            offset += view.getUint16(offset);
-          } else {
-            break;
-          }
-        }
-        resolve(1);
-      } catch(_) { resolve(1); }
-    };
-    reader.onerror = () => resolve(1);
-    reader.readAsArrayBuffer(file.slice(0, 65536));
-  });
-}
-
 // ── Image loading (lazy with sliding window) ──────────────
+// Note: EXIF orientation is auto-applied by modern browsers (Safari 13.1+,
+// Chrome 81+), so no manual EXIF parsing is needed.
 async function preloadImages() {
   images = new Array(photos.length).fill(null);
-  const CONCURRENCY = 8;
 
-  // Step 1: Read EXIF orientations for all photos (lightweight — just first 64KB)
-  let exifDone = 0;
-  async function readExif(i) {
-    orientations[i] = await readExifOrientation(photos[i]);
-    exifDone++;
-    setStatus(`EXIF情報を読み取り中… ${exifDone} / ${photos.length}`);
-    updateProgress(exifDone / photos.length * 0.08);
-  }
-
-  for (let i = 0; i < photos.length; i += CONCURRENCY) {
-    const batch = [];
-    for (let j = i; j < Math.min(i + CONCURRENCY, photos.length); j++) {
-      batch.push(readExif(j));
-    }
-    await Promise.all(batch);
-    if (encodingAborted) return;
-  }
-
-  // Step 2: Pre-load only the first few images so encoding can start quickly
+  // Pre-load only the first few images so encoding can start quickly
   const preloadCount = Math.min(5, photos.length);
   for (let i = 0; i < preloadCount; i++) {
     await ensureImageLoaded(i);
+    setStatus(`写真を読み込み中… ${i + 1} / ${photos.length}`);
+    updateProgress((i + 1) / photos.length * 0.15);
     if (encodingAborted) return;
   }
   setStatus(`写真の準備完了（${preloadCount}枚先読み済み）`);
