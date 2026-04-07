@@ -529,6 +529,11 @@
       background: rgba(24,24,31,0.9);
       color: var(--gold); border-bottom: 1px solid rgba(224,180,92,0.3);
     }
+    @media (prefers-reduced-motion: reduce) {
+      .screen { transition: none; }
+      .pill { transition: none; }
+      .status-banner { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -557,7 +562,7 @@
   <div class="screen-sub">PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE</div>
 
   <!-- Upload zone -->
-  <div class="upload-zone" id="upload-zone">
+  <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="写真を選択またはドロップ">
     <input type="file" id="file-input" accept="image/*,.heic,.heif,.avif,.webp" multiple>
     <div class="upload-icon">🎞</div>
     <div class="upload-label">写真を選択する</div>
@@ -587,11 +592,11 @@
     </div>
     <div class="card-fields" id="title-card-fields">
       <div class="field">
-        <label>タイトル</label>
+        <label for="inp-title">タイトル</label>
         <input type="text" id="inp-title" placeholder="例: Our Summer 2024">
       </div>
       <div class="field">
-        <label>サブタイトル</label>
+        <label for="inp-subtitle">サブタイトル</label>
         <input type="text" id="inp-subtitle" placeholder="例: A Collection of Memories">
       </div>
     </div>
@@ -604,7 +609,7 @@
     </div>
     <div class="card-fields" id="credits-card-fields">
       <div class="field">
-        <label>クレジットテキスト（最後に表示）</label>
+        <label for="inp-credits">クレジットテキスト（最後に表示）</label>
         <textarea id="inp-credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
       </div>
     </div>
@@ -612,28 +617,30 @@
     <div class="sep"></div>
     <div class="form-section-title">SLIDESHOW SETTINGS</div>
     <div class="field">
-      <label>1枚あたりの表示時間</label>
+      <label for="inp-duration">1枚あたりの表示時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3">
         <div class="range-val"><span id="val-duration">3</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label>トランジション時間（暗転の速さ）</label>
+      <label for="inp-fade">トランジション時間（暗転の速さ）</label>
       <div class="range-wrap">
         <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8">
         <div class="range-val"><span id="val-fade">0.8</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label>トランジション効果</label>
+      <label for="inp-transition">トランジション効果</label>
       <select id="inp-transition">
         <option value="fade-to-black">暗転（フェード・トゥ・ブラック）</option>
         <option value="crossfade">クロスフェード（ディゾルブ）</option>
+        <option value="slide">スライド（横方向）</option>
+        <option value="wipe">ワイプ（横方向）</option>
       </select>
     </div>
     <div class="field">
-      <label>解像度 / クオリティ</label>
+      <label for="inp-resolution">解像度 / クオリティ</label>
       <select id="inp-resolution">
         <option value="1280x720">HD 720p (1280×720) — 推奨</option>
         <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
@@ -643,13 +650,33 @@
       </select>
     </div>
     <div class="field">
-      <label>フレームレート</label>
+      <label for="inp-fps">フレームレート</label>
       <select id="inp-fps">
         <option value="12">12fps — 軽量</option>
         <option value="15" selected>15fps — 標準</option>
         <option value="24">24fps — シネマ</option>
         <option value="30">30fps — スムーズ</option>
       </select>
+    </div>
+    <div class="toggle-field"><input type="checkbox" id="chk-ken-burns"><label for="chk-ken-burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
+
+    <div class="sep"></div>
+    <div class="form-section-title">AUDIO</div>
+    <div class="field">
+      <label>BGM（任意）</label>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn-secondary" id="btn-audio-select" style="width:auto;padding:10px 16px;flex-shrink:0">♪ 音楽を選択</button>
+        <span id="audio-file-name" style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">未選択</span>
+        <button class="btn-change" id="btn-audio-clear" style="display:none">削除</button>
+      </div>
+      <input type="file" id="audio-input" accept="audio/*" style="display:none">
+    </div>
+    <div class="field">
+      <label>BGM音量</label>
+      <div class="range-wrap">
+        <input type="range" id="inp-audio-volume" min="0" max="100" step="5" value="50">
+        <div class="range-val"><span id="val-audio-volume">50</span>%</div>
+      </div>
     </div>
 
     <div class="sep"></div>
@@ -697,6 +724,7 @@
     <div>
       <div class="done-title">完成しました</div>
       <div class="done-sub">SLIDESHOW VIDEO IS READY</div>
+      <span id="done-file-size" style="font-size:11px;color:var(--text-faint);letter-spacing:0.1em"></span>
     </div>
   </div>
 
@@ -716,40 +744,40 @@
 </div>
 
 <!-- Error toast -->
-<div id="error-toast"></div>
+<div id="error-toast" role="alert" aria-live="assertive"></div>
 
 <!-- Status banner -->
 <div class="status-banner" id="status-banner"></div>
 
 <!-- Profile modal -->
 <div class="profile-overlay" id="profile-overlay">
-  <div class="profile-modal">
+  <div class="profile-modal" role="dialog" aria-modal="true" aria-label="プロフィール設定">
     <div class="profile-modal-header">
       <span class="form-section-title" style="margin:0;padding:0;border:0">PROFILE</span>
       <button class="profile-close" id="btn-profile-close">✕</button>
     </div>
     <div class="field">
-      <label>名前 / クレジット名</label>
+      <label for="inp-profile-name">名前 / クレジット名</label>
       <input type="text" id="inp-profile-name" placeholder="例: Taro Yamada">
     </div>
     <div class="sep"></div>
     <div class="form-section-title" style="border:0;padding:0">DEFAULT SETTINGS</div>
     <div class="field">
-      <label>デフォルト表示時間</label>
+      <label for="inp-profile-duration">デフォルト表示時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-profile-duration" min="1" max="10" step="0.5" value="3">
         <div class="range-val"><span id="val-profile-duration">3</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label>デフォルトトランジション時間</label>
+      <label for="inp-profile-fade">デフォルトトランジション時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-profile-fade" min="0.3" max="2" step="0.1" value="0.8">
         <div class="range-val"><span id="val-profile-fade">0.8</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label>デフォルト解像度</label>
+      <label for="inp-profile-resolution">デフォルト解像度</label>
       <select id="inp-profile-resolution">
         <option value="1280x720">HD 720p (1280×720) — 推奨</option>
         <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
@@ -759,7 +787,7 @@
       </select>
     </div>
     <div class="field">
-      <label>デフォルトフレームレート</label>
+      <label for="inp-profile-fps">デフォルトフレームレート</label>
       <select id="inp-profile-fps">
         <option value="12">12fps — 軽量</option>
         <option value="15" selected>15fps — 標準</option>
@@ -787,6 +815,7 @@ let encodingAborted = false;
 let encodingError = null;
 let exporting = false;
 let activeEncoder = null;
+let audioFile = null;
 
 const settings = {
   title:      '',
@@ -800,6 +829,8 @@ const settings = {
   showTitle: true,
   showCredits: true,
   transition: 'fade-to-black',
+  kenBurns: false,
+  audioVolume: 50,
 };
 
 // ── Profile persistence ──────────────────────────────────────
@@ -931,6 +962,10 @@ uploadZone.addEventListener('drop', e => {
 
 $('btn-change').addEventListener('click', () => {
   fileInput.click();
+});
+
+uploadZone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
 });
 
 let thumbURLs = [];
@@ -1127,6 +1162,31 @@ $('chk-show-credits').addEventListener('change', e => {
   updateEstimate();
 });
 
+// Ken Burns toggle
+$('chk-ken-burns').addEventListener('change', e => {
+  settings.kenBurns = e.target.checked;
+});
+
+// Audio input handlers
+$('btn-audio-select').addEventListener('click', () => $('audio-input').click());
+$('audio-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  audioFile = f;
+  $('audio-file-name').textContent = f.name;
+  $('btn-audio-clear').style.display = '';
+});
+$('btn-audio-clear').addEventListener('click', () => {
+  audioFile = null;
+  $('audio-input').value = '';
+  $('audio-file-name').textContent = '未選択';
+  $('btn-audio-clear').style.display = 'none';
+});
+$('inp-audio-volume').addEventListener('input', e => {
+  $('val-audio-volume').textContent = e.target.value;
+  settings.audioVolume = parseInt(e.target.value);
+});
+
 // Clipboard paste support
 document.addEventListener('paste', e => {
   const files = [];
@@ -1178,6 +1238,7 @@ $('btn-export').addEventListener('click', async () => {
   settings.transition    = $('inp-transition').value;
   const [w, h] = $('inp-resolution').value.split('x').map(Number);
   settings.width = w; settings.height = h;
+  settings.audioVolume = parseInt($('inp-audio-volume').value);
   await runExport();
 });
 
@@ -1209,13 +1270,17 @@ $('btn-restart').addEventListener('click', () => {
   thumbArea.style.display = 'none';
   settingsForm.style.display = 'none';
   fileInput.value = '';
+  audioFile = null;
+  $('audio-input').value = '';
+  $('audio-file-name').textContent = '未選択';
+  $('btn-audio-clear').style.display = 'none';
   showScreen('setup');
 });
 
 // ── Timeline ───────────────────────────────────────────────
 function buildTimeline() {
   const { photoDuration, fadeDuration, transition } = settings;
-  const isCrossfade = transition === 'crossfade';
+  const isOverlap = transition === 'crossfade' || transition === 'slide' || transition === 'wipe';
   const segs = [];
   let t = 0;
 
@@ -1229,7 +1294,7 @@ function buildTimeline() {
     const pd = durations[i] ?? photoDuration;
     const dur = fadeDuration + pd + fadeDuration;
     segs.push({ type: 'photo', idx: i, start: t, dur, fi: fadeDuration, fo: fadeDuration });
-    if (isCrossfade && i < photos.length - 1) {
+    if (isOverlap && i < photos.length - 1) {
       t += pd + fadeDuration;  // overlap by fadeDuration
     } else {
       t += dur;
@@ -1247,10 +1312,11 @@ function buildTimeline() {
 
 function getFrameInfo(timeline, time) {
   const segs = timeline.segs;
-  const isCrossfade = settings.transition === 'crossfade';
+  const transition = settings.transition;
+  const isOverlap = transition === 'crossfade' || transition === 'slide' || transition === 'wipe';
 
-  // In crossfade mode, check for overlapping photo segments
-  if (isCrossfade) {
+  // In overlap mode (crossfade/slide/wipe), check for overlapping photo segments
+  if (isOverlap) {
     const overlapping = [];
     for (let i = 0; i < segs.length; i++) {
       const s = segs[i];
@@ -1260,20 +1326,22 @@ function getFrameInfo(timeline, time) {
         if      (rel < s.fi)               alpha = rel / s.fi;
         else if (rel > s.dur - s.fo)       alpha = (s.dur - rel) / s.fo;
         else                               alpha = 1;
-        overlapping.push({ type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)) });
+        const progress = rel / s.dur;
+        overlapping.push({ type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)), progress });
       } else if (s.start > time) {
         break;  // segments are ordered by start time
       }
     }
     if (overlapping.length >= 2) {
+      const overlapType = transition === 'slide' ? 'slide' : transition === 'wipe' ? 'wipe' : 'crossfade';
       return {
-        type: 'crossfade',
+        type: overlapType,
         from: overlapping[0],
         to: overlapping[1],
       };
     }
     if (overlapping.length === 1) return overlapping[0];
-    return { type: 'black', idx: -1, alpha: 0 };
+    return { type: 'black', idx: -1, alpha: 0, progress: 0 };
   }
 
   // Fade-to-black mode: binary search
@@ -1289,29 +1357,56 @@ function getFrameInfo(timeline, time) {
       if      (rel < s.fi)               alpha = rel / s.fi;
       else if (rel > s.dur - s.fo)       alpha = (s.dur - rel) / s.fo;
       else                               alpha = 1;
-      return { type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)) };
+      const progress = rel / s.dur;
+      return { type: s.type, idx: s.idx, alpha: Math.max(0, Math.min(1, alpha)), progress };
     }
   }
-  return { type: 'black', idx: -1, alpha: 0 };
+  return { type: 'black', idx: -1, alpha: 0, progress: 0 };
 }
 
 // ── Canvas rendering ───────────────────────────────────────
 function renderFrame(info) {
-  const { width, height } = settings;
-  ctx.clearRect(0, 0, width, height);
+  const { width: W, height: H } = settings;
+  ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, W, H);
 
   if (info.type === 'crossfade') {
-    // Draw "from" image
-    renderSingleLayer(info.from, width, height);
-    // Draw "to" image on top
-    renderSingleLayer(info.to, width, height);
+    renderSingleLayer(info.from, W, H);
+    renderSingleLayer(info.to, W, H);
+    return;
+  }
+
+  if (info.type === 'slide') {
+    const offsetX = (1 - info.from.alpha) * W;
+    // Draw "from" sliding out to the left
+    ctx.save();
+    ctx.translate(-offsetX, 0);
+    renderSingleLayer({ ...info.from, alpha: 1 }, W, H);
+    ctx.restore();
+    // Draw "to" sliding in from the right
+    ctx.save();
+    ctx.translate(W - offsetX, 0);
+    renderSingleLayer({ ...info.to, alpha: 1 }, W, H);
+    ctx.restore();
+    return;
+  }
+
+  if (info.type === 'wipe') {
+    // Draw "from" image normally
+    renderSingleLayer({ ...info.from, alpha: 1 }, W, H);
+    // Draw "to" image clipped to left portion
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, info.to.alpha * W, H);
+    ctx.clip();
+    renderSingleLayer({ ...info.to, alpha: 1 }, W, H);
+    ctx.restore();
     return;
   }
 
   if (info.type === 'black' || info.alpha <= 0) return;
-  renderSingleLayer(info, width, height);
+  renderSingleLayer(info, W, H);
 }
 
 function renderSingleLayer(info, width, height) {
@@ -1321,7 +1416,21 @@ function renderSingleLayer(info, width, height) {
 
   if (info.type === 'photo') {
     const img = images[info.idx];
-    if (img) drawImageCover(ctx, img, width, height);
+    if (img) {
+      if (settings.kenBurns && info.progress != null) {
+        const progress = info.progress;
+        const scale = 1 + 0.08 * progress;
+        const panX = (info.idx % 2 === 0 ? 1 : -1) * 15 * progress;
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-width / 2 + panX, -height / 2);
+        drawImageContain(ctx, img, width, height);
+        ctx.restore();
+      } else {
+        drawImageContain(ctx, img, width, height);
+      }
+    }
   } else if (info.type === 'title') {
     drawTitleCard(ctx, width, height);
   } else if (info.type === 'credits') {
@@ -1331,7 +1440,7 @@ function renderSingleLayer(info, width, height) {
   ctx.restore();
 }
 
-function drawImageCover(ctx, img, W, H) {
+function drawImageContain(ctx, img, W, H) {
   // Modern browsers (Safari 13.1+, Chrome 81+) auto-apply EXIF orientation,
   // so naturalWidth/Height already reflect the correctly oriented dimensions.
   // No manual rotation needed.
@@ -1421,8 +1530,17 @@ function wrapText(ctx, text, x, y, maxW, lineH) {
     const test = line ? line + ' ' + word : word;
     if (ctx.measureText(test).width > maxW && line) {
       ctx.fillText(line, x, lineY);
-      line  = word; lineY += lineH;
+      line = word; lineY += lineH;
     } else { line = test; }
+    // Break long words that exceed maxW on their own
+    while (ctx.measureText(line).width > maxW && line.length > 1) {
+      let breakAt = line.length - 1;
+      while (breakAt > 0 && ctx.measureText(line.slice(0, breakAt)).width > maxW) breakAt--;
+      if (breakAt === 0) breakAt = 1;
+      ctx.fillText(line.slice(0, breakAt), x, lineY);
+      line = line.slice(breakAt);
+      lineY += lineH;
+    }
   }
   ctx.fillText(line, x, lineY);
 }
@@ -1526,10 +1644,53 @@ async function runExport() {
     const coverBase64  = coverDataUrl.split(',')[1];
     const coverBytes   = Uint8Array.from(atob(coverBase64), c => c.charCodeAt(0));
 
+    // Decode audio if provided
+    let pcmData = null;
+    let audioNumChannels = 2;
+    let audioTotalSamples = 0;
+    const audioSampleRate = 48000;
+
+    if (audioFile) {
+      setStatus('音楽を準備中...');
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: audioSampleRate });
+      const audioArrayBuf = await audioFile.arrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(audioArrayBuf);
+
+      audioNumChannels = Math.min(audioBuffer.numberOfChannels, 2);
+      const totalDur = timeline.totalDur;
+      audioTotalSamples = Math.ceil(totalDur * audioSampleRate);
+      const volume = settings.audioVolume / 100;
+
+      let channelData;
+      if (audioBuffer.sampleRate !== audioSampleRate) {
+        const offlineCtx = new OfflineAudioContext(audioNumChannels, audioTotalSamples, audioSampleRate);
+        const source = offlineCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(offlineCtx.destination);
+        source.start();
+        const resampled = await offlineCtx.startRendering();
+        channelData = Array.from({length: audioNumChannels}, (_, ch) => resampled.getChannelData(ch));
+      } else {
+        channelData = Array.from({length: audioNumChannels}, (_, ch) => audioBuffer.getChannelData(ch));
+      }
+
+      const pcmLength = audioTotalSamples * audioNumChannels;
+      pcmData = new Int16Array(pcmLength);
+      for (let i = 0; i < audioTotalSamples; i++) {
+        for (let ch = 0; ch < audioNumChannels; ch++) {
+          const sample = (channelData[ch][i] || 0) * volume;
+          pcmData[i * audioNumChannels + ch] = Math.max(-32768, Math.min(32767, Math.round(sample * 32767)));
+        }
+      }
+
+      audioCtx.close().catch(() => {});
+    }
+
     // Setup muxer
     const muxer = new Muxer({
       target: new ArrayBufferTarget(),
       video:  { codec: 'avc', width, height },
+      audio:  pcmData ? { codec: 'aac', sampleRate: audioSampleRate, numberOfChannels: audioNumChannels } : undefined,
       fastStart: 'in-memory',
       coverData: coverBytes,
     });
@@ -1582,7 +1743,7 @@ async function runExport() {
       if (info.type === 'photo') {
         await ensureImageLoaded(info.idx);
         currentPhotoIdx = info.idx;
-      } else if (info.type === 'crossfade') {
+      } else if (info.type === 'crossfade' || info.type === 'slide' || info.type === 'wipe') {
         if (info.from.type === 'photo') await ensureImageLoaded(info.from.idx);
         if (info.to.type === 'photo') await ensureImageLoaded(info.to.idx);
         currentPhotoIdx = info.to.type === 'photo' ? info.to.idx : (info.from.type === 'photo' ? info.from.idx : currentPhotoIdx);
@@ -1592,7 +1753,7 @@ async function runExport() {
       }
 
       // Skip canvas re-render if same content at full opacity (hold portion)
-      needsRender = info.type === 'crossfade' || !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
+      needsRender = info.type === 'crossfade' || info.type === 'slide' || info.type === 'wipe' || settings.kenBurns || !(info.alpha === 1 && info.type === prevType && info.idx === prevIdx);
       if (needsRender) {
         renderFrame(info);
         prevType = info.type;
@@ -1626,6 +1787,42 @@ async function runExport() {
     await encoder.flush();
     encoder.close();
     activeEncoder = null;
+
+    // Encode audio track if available
+    if (pcmData && 'AudioEncoder' in window) {
+      setStatus('音楽をエンコード中...');
+      const audioEncoder = new AudioEncoder({
+        output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+        error: (e) => { encodingError = e; },
+      });
+      audioEncoder.configure({
+        codec: 'mp4a.40.2',
+        sampleRate: audioSampleRate,
+        numberOfChannels: audioNumChannels,
+        bitrate: 128000,
+      });
+
+      const CHUNK_SIZE = 1024;
+      for (let offset = 0; offset < audioTotalSamples; offset += CHUNK_SIZE) {
+        const chunkSamples = Math.min(CHUNK_SIZE, audioTotalSamples - offset);
+        const audioData = new AudioData({
+          format: 's16',
+          sampleRate: audioSampleRate,
+          numberOfFrames: chunkSamples,
+          numberOfChannels: audioNumChannels,
+          timestamp: Math.round(offset / audioSampleRate * 1_000_000),
+          data: pcmData.slice(offset * audioNumChannels, (offset + chunkSamples) * audioNumChannels).buffer,
+        });
+        audioEncoder.encode(audioData);
+        audioData.close();
+      }
+
+      await audioEncoder.flush();
+      audioEncoder.close();
+    } else if (pcmData && !('AudioEncoder' in window)) {
+      showError('このブラウザはAudioEncoderに対応していないため、音楽なしで出力されます。');
+    }
+
     muxer.finalize();
 
     updateProgress(1);
@@ -1634,6 +1831,8 @@ async function runExport() {
 
     const buffer = muxer.target.buffer;
     const blob   = new Blob([buffer], { type: 'video/mp4' });
+    const sizeMb = (blob.size / 1024 / 1024).toFixed(1);
+    $('done-file-size').textContent = sizeMb + ' MB';
     if (videoURL) URL.revokeObjectURL(videoURL);
     videoURL          = URL.createObjectURL(blob);
     resultVideo.src   = videoURL;
@@ -1689,6 +1888,7 @@ $('btn-profile').addEventListener('click', () => {
 
 $('btn-profile-close').addEventListener('click', () => profileOverlay.classList.remove('visible'));
 profileOverlay.addEventListener('click', e => { if (e.target === profileOverlay) profileOverlay.classList.remove('visible'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && profileOverlay.classList.contains('visible')) profileOverlay.classList.remove('visible'); });
 
 $('inp-profile-duration').addEventListener('input', e => { $('val-profile-duration').textContent = e.target.value; });
 $('inp-profile-fade').addEventListener('input', e => { $('val-profile-fade').textContent = e.target.value; });
