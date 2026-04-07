@@ -313,10 +313,10 @@
     }
 
     /* ── Screen 3: Done ──────────────────────────────────── */
-    #screen-done { padding-top: 70px; }
+    #screen-done { padding-top: 58px; min-height: auto; }
     .done-header {
       display: flex; align-items: center; gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
     .done-check {
       width: 36px; height: 36px; border-radius: 50%;
@@ -332,7 +332,7 @@
       font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em;
     }
     #result-video {
-      width: 100%; border-radius: 10px; margin-bottom: 20px;
+      width: 100%; border-radius: 10px; margin-bottom: 14px;
       border: 1px solid rgba(255,255,255,0.06); background: #000;
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
@@ -492,6 +492,18 @@
     }
     .thumb-arrow:active { background: var(--gold); color: #000; }
     .thumb-arrow.hidden { visibility: hidden; }
+    .thumb-remove {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(0,0,0,0.7); border: none;
+      color: #e08080; font-size: 11px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 0; position: absolute; top: 2px; right: 2px;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .thumb-wrap:hover .thumb-remove,
+    .thumb-wrap:active .thumb-remove { opacity: 1; pointer-events: all; }
+    .thumb-remove:active { background: #c04040; color: #fff; }
     .reorder-hint {
       font-size: 10px; color: var(--text-faint); letter-spacing: 0.1em;
       margin-top: 4px;
@@ -693,14 +705,14 @@
   <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4">
     ⬇ &nbsp; ダウンロード（MP4）
   </a>
+  <div class="gap16"></div>
+  <button class="btn-secondary" id="btn-back-settings">← 設定を変更して再作成</button>
+  <div class="gap16"></div>
+  <button class="btn-secondary" id="btn-restart" style="color:var(--text-faint);border-color:rgba(255,255,255,0.06)">写真を変えて新しく作る</button>
   <p class="ios-note">
     iOSでダウンロードできない場合：<br>
     ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください
   </p>
-  <div class="gap32"></div>
-  <button class="btn-secondary" id="btn-back-settings">← 設定を変更して再作成</button>
-  <div class="gap16"></div>
-  <button class="btn-secondary" id="btn-restart" style="color:var(--text-faint);border-color:rgba(255,255,255,0.06)">写真を変えて新しく作る</button>
 </div>
 
 <!-- Error toast -->
@@ -954,6 +966,13 @@ function renderThumbs() {
     arrows.appendChild(rightBtn);
     wrap.appendChild(arrows);
 
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'thumb-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', e => { e.stopPropagation(); removePhoto(i); });
+    wrap.appendChild(removeBtn);
+
     // Duration badge
     const badge = document.createElement('div');
     badge.className = 'dur-badge default';
@@ -975,10 +994,30 @@ function renderThumbs() {
   if (photos.length > 1) {
     const hint = document.createElement('div');
     hint.className = 'reorder-hint';
-    hint.textContent = '◀ ▶ で並び替え';
+    hint.textContent = '◀ ▶ 並び替え · ✕ 削除';
     thumbsGrid.parentElement.appendChild(hint);
   }
   thumbArea.style.display = 'block';
+}
+
+function removePhoto(i) {
+  if (i < 0 || i >= photos.length) return;
+  photos.splice(i, 1);
+  durations.splice(i, 1);
+  orientations.splice(i, 1);
+  images.splice(i, 1);
+  if (!photos.length) {
+    thumbsGrid.innerHTML = '';
+    thumbArea.style.display = 'none';
+    settingsForm.style.display = 'none';
+    fileInput.value = '';
+    const oldHint = thumbArea.querySelector('.reorder-hint');
+    if (oldHint) oldHint.remove();
+    updateEstimate();
+    return;
+  }
+  renderThumbs();
+  updateEstimate();
 }
 
 function swapPhotos(i, j) {
