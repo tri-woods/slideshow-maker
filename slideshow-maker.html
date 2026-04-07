@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="theme-color" content="#0a0a0f">
   <title>CINEMA SLIDE</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -370,6 +374,18 @@
     .profile-btn:active { border-color: var(--gold); background: var(--gold-faint); }
     .profile-btn svg { width: 16px; height: 16px; }
 
+    .lang-btn {
+      height: 28px; padding: 0 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--gold); cursor: pointer;
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lang-btn:active { border-color: var(--gold); background: var(--gold-faint); }
+
     .profile-overlay {
       position: fixed; inset: 0; z-index: 150;
       background: rgba(0,0,0,0.75);
@@ -548,7 +564,8 @@
     <div class="pill" id="pill-2">02</div>
     <div class="pill" id="pill-3">03</div>
   </div>
-  <button class="profile-btn" id="btn-profile" title="プロフィール設定">
+  <button class="lang-btn" id="btn-lang" title="English / 日本語">EN</button>
+  <button class="profile-btn" id="btn-profile" data-i18n-title="profile_btn_title" title="プロフィール設定">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
@@ -558,24 +575,24 @@
 
 <!-- ── Screen 1: Setup ───────────────────────────── -->
 <div class="screen visible" id="screen-setup">
-  <div class="screen-title">スライドショーを<br><em style="font-style:italic">つくる</em></div>
-  <div class="screen-sub">PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE</div>
+  <div class="screen-title" data-i18n="setup_title">スライドショーを<br><em style="font-style:italic">つくる</em></div>
+  <div class="screen-sub" data-i18n="setup_sub">PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE</div>
 
   <!-- Upload zone -->
-  <div class="upload-zone" id="upload-zone" aria-label="写真を選択またはドロップ">
-    <input type="file" id="file-input" accept="image/*,.heic,.heif,.avif,.webp" multiple aria-label="写真を選択">
+  <div class="upload-zone" id="upload-zone" data-i18n-aria="upload_zone_aria">
+    <input type="file" id="file-input" accept="image/*,.heic,.heif,.avif,.webp" multiple data-i18n-aria="file_input_aria">
     <div class="upload-icon">🎞</div>
-    <div class="upload-label">写真を選択する</div>
-    <div class="upload-note">最大150枚 · JPEG / PNG / HEIC 対応</div>
+    <div class="upload-label" data-i18n="upload_label">写真を選択する</div>
+    <div class="upload-note" data-i18n="upload_note">最大150枚 · JPEG / PNG / HEIC 対応</div>
   </div>
 
   <!-- Thumbnail area -->
   <div id="thumbnail-area">
     <div class="thumbnail-header">
-      <span id="photo-count-label">0 枚選択済み</span>
+      <span id="photo-count-label">0</span>
       <div style="display:flex;gap:12px">
-        <button class="btn-change" id="btn-add">追加する</button>
-        <button class="btn-change" id="btn-change">変更する</button>
+        <button class="btn-change" id="btn-add" data-i18n="btn_add">追加する</button>
+        <button class="btn-change" id="btn-change" data-i18n="btn_change">変更する</button>
       </div>
     </div>
     <input type="file" id="file-input-add" accept="image/*,.heic,.heif,.avif,.webp" multiple style="display:none">
@@ -588,16 +605,16 @@
     <div class="form-section-title">TITLE</div>
     <div class="toggle-field">
       <input type="checkbox" id="chk-show-title" checked>
-      <label for="chk-show-title">タイトル画面を表示</label>
+      <label for="chk-show-title" data-i18n="show_title_card">タイトル画面を表示</label>
     </div>
     <div class="card-fields" id="title-card-fields">
       <div class="field">
-        <label for="inp-title">タイトル</label>
-        <input type="text" id="inp-title" placeholder="例: Our Summer 2024">
+        <label for="inp-title" data-i18n="label_title">タイトル</label>
+        <input type="text" id="inp-title" data-i18n-placeholder="placeholder_title" placeholder="例: Our Summer 2024">
       </div>
       <div class="field">
-        <label for="inp-subtitle">サブタイトル</label>
-        <input type="text" id="inp-subtitle" placeholder="例: A Collection of Memories">
+        <label for="inp-subtitle" data-i18n="label_subtitle">サブタイトル</label>
+        <input type="text" id="inp-subtitle" data-i18n-placeholder="placeholder_subtitle" placeholder="例: A Collection of Memories">
       </div>
     </div>
 
@@ -605,74 +622,74 @@
     <div class="form-section-title">CREDITS</div>
     <div class="toggle-field">
       <input type="checkbox" id="chk-show-credits" checked>
-      <label for="chk-show-credits">クレジット画面を表示</label>
+      <label for="chk-show-credits" data-i18n="show_credits_card">クレジット画面を表示</label>
     </div>
     <div class="card-fields" id="credits-card-fields">
       <div class="field">
-        <label for="inp-credits">クレジットテキスト（最後に表示）</label>
-        <textarea id="inp-credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
+        <label for="inp-credits" data-i18n="label_credits">クレジットテキスト（最後に表示）</label>
+        <textarea id="inp-credits" data-i18n-placeholder="placeholder_credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
       </div>
     </div>
 
     <div class="sep"></div>
     <div class="form-section-title">SLIDESHOW SETTINGS</div>
     <div class="field">
-      <label for="inp-duration">1枚あたりの表示時間</label>
+      <label for="inp-duration" data-i18n="label_duration">1枚あたりの表示時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3">
         <div class="range-val"><span id="val-duration">3</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label for="inp-fade">トランジション時間（暗転の速さ）</label>
+      <label for="inp-fade" data-i18n="label_fade">トランジション時間（暗転の速さ）</label>
       <div class="range-wrap">
         <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8">
         <div class="range-val"><span id="val-fade">0.8</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label for="inp-transition">トランジション効果</label>
+      <label for="inp-transition" data-i18n="label_transition">トランジション効果</label>
       <select id="inp-transition">
-        <option value="fade-to-black">暗転（フェード・トゥ・ブラック）</option>
-        <option value="crossfade">クロスフェード（ディゾルブ）</option>
-        <option value="slide">スライド（横方向）</option>
-        <option value="wipe">ワイプ（横方向）</option>
+        <option value="fade-to-black" data-i18n="transition_fade">暗転（フェード・トゥ・ブラック）</option>
+        <option value="crossfade" data-i18n="transition_crossfade">クロスフェード（ディゾルブ）</option>
+        <option value="slide" data-i18n="transition_slide">スライド（横方向）</option>
+        <option value="wipe" data-i18n="transition_wipe">ワイプ（横方向）</option>
       </select>
     </div>
     <div class="field">
-      <label for="inp-resolution">解像度 / クオリティ</label>
+      <label for="inp-resolution" data-i18n="label_resolution">解像度 / クオリティ</label>
       <select id="inp-resolution">
-        <option value="1280x720">HD 720p (1280×720) — 推奨</option>
-        <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
+        <option value="1280x720" data-i18n="res_720">HD 720p (1280×720) — 推奨</option>
+        <option value="854x480" data-i18n="res_480">SD 480p (854×480) — 高速・軽量</option>
         <option value="1920x1080">Full HD 1080p (1920×1080)</option>
-        <option value="1080x1080">スクエア 1:1 (1080×1080)</option>
-        <option value="1080x1920">縦型 9:16 (1080×1920) — ストーリーズ</option>
+        <option value="1080x1080" data-i18n="res_square">スクエア 1:1 (1080×1080)</option>
+        <option value="1080x1920" data-i18n="res_vertical">縦型 9:16 (1080×1920) — ストーリーズ</option>
       </select>
     </div>
     <div class="field">
-      <label for="inp-fps">フレームレート</label>
+      <label for="inp-fps" data-i18n="label_fps">フレームレート</label>
       <select id="inp-fps">
-        <option value="12">12fps — 軽量</option>
-        <option value="15" selected>15fps — 標準</option>
-        <option value="24">24fps — シネマ</option>
-        <option value="30">30fps — スムーズ</option>
+        <option value="12" data-i18n="fps_12">12fps — 軽量</option>
+        <option value="15" selected data-i18n="fps_15">15fps — 標準</option>
+        <option value="24" data-i18n="fps_24">24fps — シネマ</option>
+        <option value="30" data-i18n="fps_30">30fps — スムーズ</option>
       </select>
     </div>
-    <div class="toggle-field"><input type="checkbox" id="chk-ken-burns"><label for="chk-ken-burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
+    <div class="toggle-field"><input type="checkbox" id="chk-ken-burns"><label for="chk-ken-burns" data-i18n="label_ken_burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
 
     <div class="sep"></div>
     <div class="form-section-title">AUDIO</div>
     <div class="field">
-      <label>BGM（任意）</label>
+      <label data-i18n="label_bgm">BGM（任意）</label>
       <div style="display:flex;gap:10px;align-items:center">
-        <button class="btn-secondary" id="btn-audio-select" style="width:auto;padding:10px 16px;flex-shrink:0">♪ 音楽を選択</button>
-        <span id="audio-file-name" style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">未選択</span>
-        <button class="btn-change" id="btn-audio-clear" style="display:none">削除</button>
+        <button class="btn-secondary" id="btn-audio-select" style="width:auto;padding:10px 16px;flex-shrink:0" data-i18n="btn_audio_select">♪ 音楽を選択</button>
+        <span id="audio-file-name" style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="audio_no_file">未選択</span>
+        <button class="btn-change" id="btn-audio-clear" style="display:none" data-i18n="btn_audio_clear">削除</button>
       </div>
       <input type="file" id="audio-input" accept="audio/*" style="display:none">
     </div>
     <div class="field">
-      <label>BGM音量</label>
+      <label data-i18n="label_bgm_volume">BGM音量</label>
       <div class="range-wrap">
         <input type="range" id="inp-audio-volume" min="0" max="100" step="5" value="50">
         <div class="range-val"><span id="val-audio-volume">50</span>%</div>
@@ -680,37 +697,33 @@
     </div>
 
     <div class="sep"></div>
-    <button class="btn-primary" id="btn-export">🎬 &nbsp; ビデオを作成する</button>
+    <button class="btn-primary" id="btn-export" data-i18n="btn_export">🎬 &nbsp; ビデオを作成する</button>
     <div id="estimate-info" class="estimate-info"></div>
   </div>
 </div>
 
 <!-- ── Screen 2: Encoding ────────────────────────── -->
 <div class="screen" id="screen-encoding">
-  <div class="screen-title">エンコード中</div>
-  <div class="screen-sub">RENDERING — PLEASE KEEP THE SCREEN ON</div>
+  <div class="screen-title" data-i18n="encoding_title">エンコード中</div>
+  <div class="screen-sub" data-i18n="encoding_sub">RENDERING — PLEASE KEEP THE SCREEN ON</div>
 
   <div class="canvas-preview-wrap">
     <canvas id="render-canvas" width="1280" height="720"></canvas>
   </div>
 
-  <div id="status-msg">準備中...</div>
+  <div id="status-msg" data-i18n="status_preparing">準備中...</div>
   <div class="progress-bar-track">
     <div class="progress-bar-fill" id="progress-fill"></div>
   </div>
   <div class="encoding-stats">
     <span id="stat-frame">Frame —</span>
     <span id="stat-pct">0%</span>
-    <span id="stat-eta">— 残り</span>
+    <span id="stat-eta">—</span>
   </div>
 
-  <div class="encoding-note">
-    <strong>⚠ 画面をオフにしないでください</strong><br>
-    エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>
-    写真の枚数によって数分かかる場合があります。
-  </div>
+  <div class="encoding-note" data-i18n="encoding_note"><strong>⚠ 画面をオフにしないでください</strong><br>エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。</div>
 
-  <button class="btn-cancel" id="btn-cancel">✕ &nbsp; キャンセル</button>
+  <button class="btn-cancel" id="btn-cancel" data-i18n="btn_cancel">✕ &nbsp; キャンセル</button>
 </div>
 
 <!-- ── Screen 3: Done ────────────────────────────── -->
@@ -722,25 +735,20 @@
       </svg>
     </div>
     <div>
-      <div class="done-title">完成しました</div>
-      <div class="done-sub">SLIDESHOW VIDEO IS READY</div>
+      <div class="done-title" data-i18n="done_title">完成しました</div>
+      <div class="done-sub" data-i18n="done_sub">SLIDESHOW VIDEO IS READY</div>
       <span id="done-file-size" style="font-size:11px;color:var(--text-faint);letter-spacing:0.1em"></span>
     </div>
   </div>
 
   <video id="result-video" controls playsinline webkit-playsinline></video>
 
-  <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4">
-    ⬇ &nbsp; ダウンロード（MP4）
-  </a>
+  <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4" data-i18n="btn_download">⬇ &nbsp; ダウンロード（MP4）</a>
   <div class="gap16"></div>
-  <button class="btn-secondary" id="btn-back-settings">← 設定を変更して再作成</button>
+  <button class="btn-secondary" id="btn-back-settings" data-i18n="btn_back_settings">← 設定を変更して再作成</button>
   <div class="gap16"></div>
-  <button class="btn-secondary" id="btn-restart" style="color:var(--text-faint);border-color:rgba(255,255,255,0.06)">写真を変えて新しく作る</button>
-  <p class="ios-note">
-    iOSでダウンロードできない場合：<br>
-    ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください
-  </p>
+  <button class="btn-secondary" id="btn-restart" style="color:var(--text-faint);border-color:rgba(255,255,255,0.06)" data-i18n="btn_restart">写真を変えて新しく作る</button>
+  <p class="ios-note" data-i18n="ios_note">iOSでダウンロードできない場合：<br>ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください</p>
 </div>
 
 <!-- Error toast -->
@@ -751,59 +759,281 @@
 
 <!-- Profile modal -->
 <div class="profile-overlay" id="profile-overlay">
-  <div class="profile-modal" role="dialog" aria-modal="true" aria-label="プロフィール設定">
+  <div class="profile-modal" role="dialog" aria-modal="true" data-i18n-aria="profile_aria">
     <div class="profile-modal-header">
       <span class="form-section-title" style="margin:0;padding:0;border:0">PROFILE</span>
       <button class="profile-close" id="btn-profile-close">✕</button>
     </div>
     <div class="field">
-      <label for="inp-profile-name">名前 / クレジット名</label>
-      <input type="text" id="inp-profile-name" placeholder="例: Taro Yamada">
+      <label for="inp-profile-name" data-i18n="label_profile_name">名前 / クレジット名</label>
+      <input type="text" id="inp-profile-name" data-i18n-placeholder="placeholder_profile_name" placeholder="例: Taro Yamada">
     </div>
     <div class="sep"></div>
     <div class="form-section-title" style="border:0;padding:0">DEFAULT SETTINGS</div>
     <div class="field">
-      <label for="inp-profile-duration">デフォルト表示時間</label>
+      <label for="inp-profile-duration" data-i18n="label_profile_duration">デフォルト表示時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-profile-duration" min="1" max="10" step="0.5" value="3">
         <div class="range-val"><span id="val-profile-duration">3</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label for="inp-profile-fade">デフォルトトランジション時間</label>
+      <label for="inp-profile-fade" data-i18n="label_profile_fade">デフォルトトランジション時間</label>
       <div class="range-wrap">
         <input type="range" id="inp-profile-fade" min="0.3" max="2" step="0.1" value="0.8">
         <div class="range-val"><span id="val-profile-fade">0.8</span>s</div>
       </div>
     </div>
     <div class="field">
-      <label for="inp-profile-resolution">デフォルト解像度</label>
+      <label for="inp-profile-resolution" data-i18n="label_profile_resolution">デフォルト解像度</label>
       <select id="inp-profile-resolution">
-        <option value="1280x720">HD 720p (1280×720) — 推奨</option>
-        <option value="854x480">SD 480p (854×480) — 高速・軽量</option>
+        <option value="1280x720" data-i18n="res_720">HD 720p (1280×720) — 推奨</option>
+        <option value="854x480" data-i18n="res_480">SD 480p (854×480) — 高速・軽量</option>
         <option value="1920x1080">Full HD 1080p (1920×1080)</option>
-        <option value="1080x1080">スクエア 1:1 (1080×1080)</option>
-        <option value="1080x1920">縦型 9:16 (1080×1920) — ストーリーズ</option>
+        <option value="1080x1080" data-i18n="res_square">スクエア 1:1 (1080×1080)</option>
+        <option value="1080x1920" data-i18n="res_vertical">縦型 9:16 (1080×1920) — ストーリーズ</option>
       </select>
     </div>
     <div class="field">
-      <label for="inp-profile-fps">デフォルトフレームレート</label>
+      <label for="inp-profile-fps" data-i18n="label_profile_fps">デフォルトフレームレート</label>
       <select id="inp-profile-fps">
-        <option value="12">12fps — 軽量</option>
-        <option value="15" selected>15fps — 標準</option>
-        <option value="24">24fps — シネマ</option>
-        <option value="30">30fps — スムーズ</option>
+        <option value="12" data-i18n="fps_12">12fps — 軽量</option>
+        <option value="15" selected data-i18n="fps_15">15fps — 標準</option>
+        <option value="24" data-i18n="fps_24">24fps — シネマ</option>
+        <option value="30" data-i18n="fps_30">30fps — スムーズ</option>
       </select>
     </div>
     <div class="sep"></div>
-    <button class="btn-primary" id="btn-profile-save">保存する</button>
+    <button class="btn-primary" id="btn-profile-save" data-i18n="btn_profile_save">保存する</button>
     <div class="gap16"></div>
-    <button class="btn-secondary" id="btn-profile-clear">設定をリセット</button>
-    <div class="profile-saved-toast" id="profile-saved-toast">✓ 保存しました</div>
+    <button class="btn-secondary" id="btn-profile-clear" data-i18n="btn_profile_clear">設定をリセット</button>
+    <div class="profile-saved-toast" id="profile-saved-toast" data-i18n="profile_saved_toast">✓ 保存しました</div>
   </div>
 </div>
 
 <script type="module">
+
+// ── i18n ───────────────────────────────────────────────────
+const i18n = {
+  ja: {
+    setup_title: 'スライドショーを<br><em style="font-style:italic">つくる</em>',
+    setup_sub: 'PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE',
+    upload_label: '写真を選択する',
+    upload_note: '最大150枚 · JPEG / PNG / HEIC 対応',
+    upload_zone_aria: '写真を選択またはドロップ',
+    file_input_aria: '写真を選択',
+    btn_add: '追加する',
+    btn_change: '変更する',
+    photos_selected: '枚選択済み',
+    show_title_card: 'タイトル画面を表示',
+    label_title: 'タイトル',
+    placeholder_title: '例: Our Summer 2024',
+    label_subtitle: 'サブタイトル',
+    placeholder_subtitle: '例: A Collection of Memories',
+    show_credits_card: 'クレジット画面を表示',
+    label_credits: 'クレジットテキスト（最後に表示）',
+    placeholder_credits: '例: Photography by Taro Yamada\n2024 — All Rights Reserved',
+    label_duration: '1枚あたりの表示時間',
+    label_fade: 'トランジション時間（暗転の速さ）',
+    label_transition: 'トランジション効果',
+    transition_fade: '暗転（フェード・トゥ・ブラック）',
+    transition_crossfade: 'クロスフェード（ディゾルブ）',
+    transition_slide: 'スライド（横方向）',
+    transition_wipe: 'ワイプ（横方向）',
+    label_resolution: '解像度 / クオリティ',
+    res_720: 'HD 720p (1280×720) — 推奨',
+    res_480: 'SD 480p (854×480) — 高速・軽量',
+    res_square: 'スクエア 1:1 (1080×1080)',
+    res_vertical: '縦型 9:16 (1080×1920) — ストーリーズ',
+    label_fps: 'フレームレート',
+    fps_12: '12fps — 軽量',
+    fps_15: '15fps — 標準',
+    fps_24: '24fps — シネマ',
+    fps_30: '30fps — スムーズ',
+    label_ken_burns: 'Ken Burns エフェクト（パン＆ズーム）',
+    label_bgm: 'BGM（任意）',
+    btn_audio_select: '♪ 音楽を選択',
+    audio_no_file: '未選択',
+    btn_audio_clear: '削除',
+    label_bgm_volume: 'BGM音量',
+    btn_export: '🎬 &nbsp; ビデオを作成する',
+    encoding_title: 'エンコード中',
+    encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
+    encoding_note: '<strong>⚠ 画面をオフにしないでください</strong><br>エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。',
+    btn_cancel: '✕ &nbsp; キャンセル',
+    done_title: '完成しました',
+    done_sub: 'SLIDESHOW VIDEO IS READY',
+    btn_download: '⬇ &nbsp; ダウンロード（MP4）',
+    btn_back_settings: '← 設定を変更して再作成',
+    btn_restart: '写真を変えて新しく作る',
+    ios_note: 'iOSでダウンロードできない場合：<br>ビデオを長押しして <em>「ビデオを保存」</em> または <em>「共有」</em> を選択してください',
+    profile_btn_title: 'プロフィール設定',
+    profile_aria: 'プロフィール設定',
+    label_profile_name: '名前 / クレジット名',
+    placeholder_profile_name: '例: Taro Yamada',
+    label_profile_duration: 'デフォルト表示時間',
+    label_profile_fade: 'デフォルトトランジション時間',
+    label_profile_resolution: 'デフォルト解像度',
+    label_profile_fps: 'デフォルトフレームレート',
+    btn_profile_save: '保存する',
+    btn_profile_clear: '設定をリセット',
+    profile_saved_toast: '✓ 保存しました',
+    reorder_hint: '◀ ▶ 並び替え · ✕ 削除',
+    status_preparing: '準備中...',
+    status_encoding_banner: '🎬 エンコード中…',
+    status_done_banner: '✓ 完成しました — ダウンロードできます',
+    status_loading_lib: 'ライブラリを読み込み中...',
+    status_loading_photos: '写真を読み込み中…',
+    status_photos_ready: '写真の準備完了',
+    status_preloaded: '枚先読み済み',
+    status_loading_fonts: 'フォントを準備中...',
+    status_generating_cover: 'カバー画像を生成中...',
+    status_preparing_audio: '音楽を準備中...',
+    status_encoding: 'エンコード中...',
+    status_finalizing: '仕上げ中...',
+    status_encoding_audio: '音楽をエンコード中...',
+    status_eta_remaining: '残り',
+    status_done: '完了',
+    error_no_photos: '写真を選択してください',
+    error_max_photos: '写真は最大150枚まで選択できます',
+    error_no_image_files: '件のファイルが選択されましたが、対応する画像ファイルが見つかりませんでした',
+    error_max_photos_detail_pre: '写真は最大150枚まで（現在',
+    error_max_photos_detail_current: '枚、追加',
+    error_max_photos_detail_total: '枚＝',
+    error_max_photos_detail_post: '枚）',
+    error_browser_unsupported: 'このブラウザは動画エクスポートに対応していません。\niOS 17以上のSafariをご使用ください。',
+    error_codec_unsupported: 'コーデック (H.264) はこのデバイスでサポートされていません。',
+    error_audio_encoder_unsupported: 'このブラウザはAudioEncoderに対応していないため、音楽なしで出力されます。',
+    error_generic: 'エラーが発生しました: ',
+    estimate_mb: 'MB',
+    estimate_min: '分',
+    estimate_sec: '秒',
+    estimate_frames: 'フレーム',
+    estimate_about: '約',
+  },
+  en: {
+    setup_title: 'Create Your<br><em style="font-style:italic">Slideshow</em>',
+    setup_sub: 'PHOTO SLIDESHOW MAKER — iOS SAFARI COMPATIBLE',
+    upload_label: 'Select Photos',
+    upload_note: 'Up to 150 · JPEG / PNG / HEIC',
+    upload_zone_aria: 'Select or drop photos',
+    file_input_aria: 'Select photos',
+    btn_add: 'Add More',
+    btn_change: 'Replace',
+    photos_selected: 'photos selected',
+    show_title_card: 'Show title card',
+    label_title: 'Title',
+    placeholder_title: 'e.g. Our Summer 2024',
+    label_subtitle: 'Subtitle',
+    placeholder_subtitle: 'e.g. A Collection of Memories',
+    show_credits_card: 'Show credits card',
+    label_credits: 'Credits text (shown at end)',
+    placeholder_credits: 'e.g. Photography by Taro Yamada\n2024 — All Rights Reserved',
+    label_duration: 'Duration per photo',
+    label_fade: 'Transition duration',
+    label_transition: 'Transition effect',
+    transition_fade: 'Fade to Black',
+    transition_crossfade: 'Crossfade (Dissolve)',
+    transition_slide: 'Slide (Horizontal)',
+    transition_wipe: 'Wipe (Horizontal)',
+    label_resolution: 'Resolution / Quality',
+    res_720: 'HD 720p (1280×720) — Recommended',
+    res_480: 'SD 480p (854×480) — Fast & Light',
+    res_square: 'Square 1:1 (1080×1080)',
+    res_vertical: 'Vertical 9:16 (1080×1920) — Stories',
+    label_fps: 'Frame Rate',
+    fps_12: '12fps — Light',
+    fps_15: '15fps — Standard',
+    fps_24: '24fps — Cinema',
+    fps_30: '30fps — Smooth',
+    label_ken_burns: 'Ken Burns Effect (Pan & Zoom)',
+    label_bgm: 'BGM (Optional)',
+    btn_audio_select: '♪ Select Music',
+    audio_no_file: 'None',
+    btn_audio_clear: 'Remove',
+    label_bgm_volume: 'BGM Volume',
+    btn_export: '🎬 &nbsp; Create Video',
+    encoding_title: 'Encoding',
+    encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
+    encoding_note: '<strong>⚠ Do not turn off the screen</strong><br>Encoding will be interrupted if you turn off the screen or switch apps.<br>This may take several minutes depending on the number of photos.',
+    btn_cancel: '✕ &nbsp; Cancel',
+    done_title: 'Complete',
+    done_sub: 'SLIDESHOW VIDEO IS READY',
+    btn_download: '⬇ &nbsp; Download (MP4)',
+    btn_back_settings: '← Edit Settings & Recreate',
+    btn_restart: 'Start Over with New Photos',
+    ios_note: 'If download doesn\'t work on iOS:<br>Long-press the video and select <em>"Save Video"</em> or <em>"Share"</em>',
+    profile_btn_title: 'Profile Settings',
+    profile_aria: 'Profile Settings',
+    label_profile_name: 'Name / Credit Name',
+    placeholder_profile_name: 'e.g. Taro Yamada',
+    label_profile_duration: 'Default Duration',
+    label_profile_fade: 'Default Transition Duration',
+    label_profile_resolution: 'Default Resolution',
+    label_profile_fps: 'Default Frame Rate',
+    btn_profile_save: 'Save',
+    btn_profile_clear: 'Reset Settings',
+    profile_saved_toast: '✓ Saved',
+    reorder_hint: '◀ ▶ Reorder · ✕ Remove',
+    status_preparing: 'Preparing...',
+    status_encoding_banner: '🎬 Encoding…',
+    status_done_banner: '✓ Complete — Ready to download',
+    status_loading_lib: 'Loading library...',
+    status_loading_photos: 'Loading photos…',
+    status_photos_ready: 'Photos ready',
+    status_preloaded: 'preloaded',
+    status_loading_fonts: 'Loading fonts...',
+    status_generating_cover: 'Generating cover image...',
+    status_preparing_audio: 'Preparing music...',
+    status_encoding: 'Encoding...',
+    status_finalizing: 'Finalizing...',
+    status_encoding_audio: 'Encoding audio...',
+    status_eta_remaining: 'remaining',
+    status_done: 'Done',
+    error_no_photos: 'Please select photos',
+    error_max_photos: 'Maximum 150 photos allowed',
+    error_no_image_files: 'file(s) selected but no supported image files found',
+    error_max_photos_detail_pre: 'Maximum 150 photos (currently ',
+    error_max_photos_detail_current: ', adding ',
+    error_max_photos_detail_total: ' = ',
+    error_max_photos_detail_post: ')',
+    error_browser_unsupported: 'This browser does not support video export.\nPlease use Safari 17+ on iOS.',
+    error_codec_unsupported: 'H.264 codec is not supported on this device.',
+    error_audio_encoder_unsupported: 'This browser does not support AudioEncoder. Video will be exported without music.',
+    error_generic: 'An error occurred: ',
+    estimate_mb: 'MB',
+    estimate_min: 'min',
+    estimate_sec: 'sec',
+    estimate_frames: 'frames',
+    estimate_about: '~',
+  }
+};
+let currentLang = localStorage.getItem('cinema-slide-lang') || 'ja';
+
+function t(key) { return (i18n[currentLang] || i18n.ja)[key] || key; }
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang;
+  // data-i18n: innerHTML
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18n);
+  });
+  // data-i18n-placeholder: placeholder attribute
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  // data-i18n-aria: aria-label attribute
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  });
+  // data-i18n-title: title attribute
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  // Update lang toggle button text
+  const langBtn = document.getElementById('btn-lang');
+  if (langBtn) langBtn.textContent = currentLang === 'ja' ? 'EN' : 'JP';
+}
 
 // ── State ──────────────────────────────────────────────────
 let photos       = [];   // File[]
@@ -889,9 +1119,9 @@ function showScreen(name) {
   });
   // Manage status banner
   if (name === 'encoding') {
-    showBanner('🎬 エンコード中…', 'encoding');
+    showBanner(t('status_encoding_banner'), 'encoding');
   } else if (name === 'done') {
-    showBanner('✓ 完成しました — ダウンロードできます', 'done');
+    showBanner(t('status_done_banner'), 'done');
   } else {
     hideBanner();
   }
@@ -910,16 +1140,17 @@ function handleFiles(files) {
   if (!all.length) return;
   const imgs = all.filter(isImageFile);
   if (!imgs.length) {
-    showError(`${all.length}件のファイルが選択されましたが、対応する画像ファイルが見つかりませんでした`);
+    showError(`${all.length} ${t('error_no_image_files')}`);
     return;
   }
-  if (imgs.length > 150) { showError('写真は最大150枚まで選択できます'); return; }
+  if (imgs.length > 150) { showError(t('error_max_photos')); return; }
   photos = imgs;
   durations = photos.map(() => null);
   orientations = photos.map(() => 1);
   renderThumbs();
   settingsForm.style.display = 'block';
   updateEstimate();
+  if (typeof trackEvent === 'function') trackEvent('photos_selected', { count: photos.length });
 }
 
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
@@ -937,11 +1168,11 @@ function addFiles(files) {
   if (!all.length) return;
   const imgs = all.filter(isImageFile);
   if (!imgs.length) {
-    showError(`${all.length}件のファイルが選択されましたが、対応する画像ファイルが見つかりませんでした`);
+    showError(`${all.length} ${t('error_no_image_files')}`);
     return;
   }
   const total = photos.length + imgs.length;
-  if (total > 150) { showError(`写真は最大150枚まで（現在${photos.length}枚、追加${imgs.length}枚＝${total}枚）`); return; }
+  if (total > 150) { showError(`${t('error_max_photos_detail_pre')}${photos.length}${t('error_max_photos_detail_current')}${imgs.length}${t('error_max_photos_detail_total')}${total}${t('error_max_photos_detail_post')}`); return; }
   photos = [...photos, ...imgs];
   durations = [...durations, ...imgs.map(() => null)];
   orientations = [...orientations, ...imgs.map(() => 1)];
@@ -972,7 +1203,7 @@ let thumbURLs = [];
 function renderThumbs() {
   thumbURLs.forEach(u => URL.revokeObjectURL(u));
   thumbURLs = [];
-  photoCountLbl.textContent = `${photos.length} 枚選択済み`;
+  photoCountLbl.textContent = `${photos.length} ${t('photos_selected')}`;
   thumbsGrid.innerHTML = '';
   // Remove old reorder hint
   const oldHint = thumbArea.querySelector('.reorder-hint');
@@ -1031,7 +1262,7 @@ function renderThumbs() {
   if (photos.length > 1) {
     const hint = document.createElement('div');
     hint.className = 'reorder-hint';
-    hint.textContent = '◀ ▶ 並び替え · ✕ 削除';
+    hint.textContent = t('reorder_hint');
     thumbsGrid.parentElement.appendChild(hint);
   }
   thumbArea.style.display = 'block';
@@ -1179,7 +1410,7 @@ $('audio-input').addEventListener('change', e => {
 $('btn-audio-clear').addEventListener('click', () => {
   audioFile = null;
   $('audio-input').value = '';
-  $('audio-file-name').textContent = '未選択';
+  $('audio-file-name').textContent = t('audio_no_file');
   $('btn-audio-clear').style.display = 'none';
 });
 $('inp-audio-volume').addEventListener('input', e => {
@@ -1222,14 +1453,14 @@ function updateEstimate() {
   const sizeMb = Math.round(bitrate * totalDur / 8 / 1024 / 1024 * 10) / 10;
   const mins = Math.floor(totalDur / 60);
   const secs = Math.round(totalDur % 60);
-  const durStr = mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
-  el.textContent = `約 ${sizeMb} MB · ${durStr} · ${totalFrames} フレーム`;
+  const durStr = mins > 0 ? `${mins}${t('estimate_min')}${secs}${t('estimate_sec')}` : `${secs}${t('estimate_sec')}`;
+  el.textContent = `${t('estimate_about')} ${sizeMb} ${t('estimate_mb')} · ${durStr} · ${totalFrames} ${t('estimate_frames')}`;
   el.style.display = 'block';
 }
 
 // ── Export button ─────────────────────────────────────────
 $('btn-export').addEventListener('click', async () => {
-  if (!photos.length) { showError('写真を選択してください'); return; }
+  if (!photos.length) { showError(t('error_no_photos')); return; }
   settings.title    = $('inp-title').value.trim()    || 'Untitled';
   settings.subtitle = $('inp-subtitle').value.trim();
   settings.credits  = $('inp-credits').value.trim();
@@ -1243,6 +1474,7 @@ $('btn-export').addEventListener('click', async () => {
 });
 
 $('btn-cancel').addEventListener('click', () => {
+  if (typeof trackEvent === 'function') trackEvent('export_cancel');
   encodingAborted = true;
   if (activeEncoder) {
     try { activeEncoder.close(); } catch(_) {}
@@ -1251,7 +1483,7 @@ $('btn-cancel').addEventListener('click', () => {
   exporting = false;
   $('btn-export').disabled = false;
   showScreen('setup');
-  setStatus('準備中...');
+  setStatus(t('status_preparing'));
   updateProgress(0);
 });
 
@@ -1272,7 +1504,7 @@ $('btn-restart').addEventListener('click', () => {
   fileInput.value = '';
   audioFile = null;
   $('audio-input').value = '';
-  $('audio-file-name').textContent = '未選択';
+  $('audio-file-name').textContent = t('audio_no_file');
   $('btn-audio-clear').style.display = 'none';
   showScreen('setup');
 });
@@ -1306,6 +1538,11 @@ function buildTimeline() {
     segs.push({ type: 'credits', start: t, dur: creditsDur, fi: 1, fo: 1 });
     t += creditsDur;
   }
+
+  // Watermark card at the very end
+  const wmDur = 1.5;
+  segs.push({ type: 'watermark', start: t, dur: wmDur, fi: 0.5, fo: 0.5 });
+  t += wmDur;
 
   return { segs, totalDur: t };
 }
@@ -1435,6 +1672,15 @@ function renderSingleLayer(info, width, height) {
     drawTitleCard(ctx, width, height);
   } else if (info.type === 'credits') {
     drawCreditsCard(ctx, width, height);
+  } else if (info.type === 'watermark') {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, width, height);
+    const wmSize = Math.round(width / 40);
+    ctx.font = `300 ${wmSize}px "IBM Plex Mono", monospace`;
+    ctx.fillStyle = `rgba(160,144,128,${info.alpha * 0.5})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Made with CINEMA SLIDE', width / 2, height / 2);
   }
 
   ctx.restore();
@@ -1555,11 +1801,11 @@ async function preloadImages() {
   const preloadCount = Math.min(5, photos.length);
   for (let i = 0; i < preloadCount; i++) {
     await ensureImageLoaded(i);
-    setStatus(`写真を読み込み中… ${i + 1} / ${photos.length}`);
+    setStatus(`${t('status_loading_photos')} ${i + 1} / ${photos.length}`);
     updateProgress((i + 1) / photos.length * 0.15);
     if (encodingAborted) return;
   }
-  setStatus(`写真の準備完了（${preloadCount}枚先読み済み）`);
+  setStatus(`${t('status_photos_ready')}（${preloadCount} ${t('status_preloaded')}）`);
   updateProgress(0.15);
 }
 
@@ -1592,15 +1838,20 @@ async function runExport() {
   encodingAborted = false;
   encodingError = null;
 
+  if (typeof trackEvent === 'function') trackEvent('export_start', {
+    photos: photos.length, resolution: settings.width + 'x' + settings.height,
+    fps: settings.fps, transition: settings.transition, kenBurns: settings.kenBurns, hasAudio: !!audioFile
+  });
+
   // WebCodecs check
   if (!('VideoEncoder' in window)) {
-    showError('このブラウザは動画エクスポートに対応していません。\niOS 17以上のSafariをご使用ください。');
+    showError(t('error_browser_unsupported'));
     showScreen('setup'); return;
   }
 
   try {
     // Load mp4-muxer dynamically
-    setStatus('ライブラリを読み込み中...');
+    setStatus(t('status_loading_lib'));
     let Muxer, ArrayBufferTarget;
     try {
       const mod = await import('https://cdn.jsdelivr.net/npm/mp4-muxer@5/+esm');
@@ -1615,7 +1866,7 @@ async function runExport() {
     if (encodingAborted) return;
 
     // Fonts
-    setStatus('フォントを準備中...');
+    setStatus(t('status_loading_fonts'));
     await document.fonts.ready;
     try {
       await Promise.all([
@@ -1634,7 +1885,7 @@ async function runExport() {
     const US_PER_FRAME = 1_000_000 / fps;
 
     // Generate cover image from title card
-    setStatus('カバー画像を生成中...');
+    setStatus(t('status_generating_cover'));
     const coverCanvas = document.createElement('canvas');
     coverCanvas.width  = 640;
     coverCanvas.height = 360;
@@ -1651,7 +1902,7 @@ async function runExport() {
     const audioSampleRate = 48000;
 
     if (audioFile) {
-      setStatus('音楽を準備中...');
+      setStatus(t('status_preparing_audio'));
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: audioSampleRate });
       const audioArrayBuf = await audioFile.arrayBuffer();
       const audioBuffer = await audioCtx.decodeAudioData(audioArrayBuf);
@@ -1703,7 +1954,7 @@ async function runExport() {
       codec: codecId, width, height
     });
     if (!supported.supported) {
-      throw new Error(`コーデック (H.264) はこのデバイスでサポートされていません。`);
+      throw new Error(t('error_codec_unsupported'));
     }
 
     // Setup encoder
@@ -1721,7 +1972,7 @@ async function runExport() {
     });
 
     // Encode frames
-    setStatus('エンコード中...');
+    setStatus(t('status_encoding'));
     const startMs = Date.now();
     let lastKeyframe = -999;
     let prevType = null, prevIdx = -1, needsRender = true;
@@ -1776,21 +2027,21 @@ async function runExport() {
         updateProgress(ratio);
         statFrame.textContent = `Frame ${fi} / ${totalFrames}`;
         statPct.textContent   = `${Math.round((fi / totalFrames) * 100)}%`;
-        statEta.textContent   = remain > 0 ? `約${remain}秒 残り` : '—';
+        statEta.textContent   = remain > 0 ? `${t('estimate_about')}${remain}${t('estimate_sec')} ${t('status_eta_remaining')}` : '—';
         await sleep(0);
       }
     }
 
     if (encodingAborted) return;
 
-    setStatus('仕上げ中...');
+    setStatus(t('status_finalizing'));
     await encoder.flush();
     encoder.close();
     activeEncoder = null;
 
     // Encode audio track if available
     if (pcmData && 'AudioEncoder' in window) {
-      setStatus('音楽をエンコード中...');
+      setStatus(t('status_encoding_audio'));
       const audioEncoder = new AudioEncoder({
         output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
         error: (e) => { encodingError = e; },
@@ -1820,14 +2071,14 @@ async function runExport() {
       await audioEncoder.flush();
       audioEncoder.close();
     } else if (pcmData && !('AudioEncoder' in window)) {
-      showError('このブラウザはAudioEncoderに対応していないため、音楽なしで出力されます。');
+      showError(t('error_audio_encoder_unsupported'));
     }
 
     muxer.finalize();
 
     updateProgress(1);
     statPct.textContent = '100%';
-    statEta.textContent = '完了';
+    statEta.textContent = t('status_done');
 
     const buffer = muxer.target.buffer;
     const blob   = new Blob([buffer], { type: 'video/mp4' });
@@ -1842,11 +2093,12 @@ async function runExport() {
 
     await sleep(400);
     showScreen('done');
+    if (typeof trackEvent === 'function') trackEvent('export_complete', { photos: photos.length, sizeMb: parseFloat(sizeMb), durationSec: Math.round(timeline.totalDur) });
 
   } catch (err) {
     if (encodingAborted) return;
     console.error(err);
-    showError('エラーが発生しました: ' + (err.message || err));
+    showError(t('error_generic') + (err.message || err));
     showScreen('setup');
   } finally {
     activeEncoder = null;
@@ -1941,11 +2193,45 @@ function applyProfile(p) {
   // Auto-fill credits if empty
   if (p.name && !$('inp-credits').value.trim()) {
     $('inp-credits').value = p.name;
+
+// Register service worker for PWA / offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
   }
 }
 
 // ── Init: apply saved profile on load ───────────────────────
 applyProfile(loadProfile());
+
+// ── i18n toggle ──────────────────────────────────────────────
+$('btn-lang').addEventListener('click', () => {
+  currentLang = currentLang === 'ja' ? 'en' : 'ja';
+  localStorage.setItem('cinema-slide-lang', currentLang);
+  applyLanguage();
+  if (typeof trackEvent === 'function') trackEvent('lang_change', { to: currentLang });
+});
+
+// Apply language on init
+applyLanguage();
+
+// ── Lightweight analytics (privacy-respecting, local-first) ───
+const ANALYTICS_KEY = 'cinema-slide-analytics';
+function trackEvent(name, data) {
+  try {
+    const events = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '[]');
+    events.push({ t: Date.now(), e: name, d: data || {} });
+    if (events.length > 200) events.splice(0, events.length - 200);
+    localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events));
+  } catch(_) {}
+}
+
+trackEvent('page_view');
+
+// Register service worker for PWA / offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 
 </script>
 </body>

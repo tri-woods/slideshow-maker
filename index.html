@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CINEMA SLIDE — 写真から、映画のようなスライドショーを</title>
+  <meta name="description" content="ブラウザだけで写真からMP4スライドショーを作成。アカウント不要、完全無料。Turn your photos into cinematic slideshows.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #101018;
+      --bg3:       #18181f;
+      --bg4:       #222230;
+      --text:      #f5f5f5;
+      --text-dim:  #a8a4b0;
+      --text-faint:#5e5a66;
+      --gold:      #e0b45c;
+      --gold-dim:  rgba(224,180,92,0.25);
+      --gold-faint:rgba(224,180,92,0.06);
+      --border:    rgba(224,180,92,0.15);
+      --serif:     'Playfair Display', Georgia, 'Times New Roman', serif;
+      --mono:      'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    html { background: var(--bg); scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+    /* ── Fade-in animation ─────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(224,180,92,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-logo {
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-logo .mark { font-size: 16px; }
+
+    .hero-title {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(42px, 8vw, 80px);
+      line-height: 1.1;
+      margin-bottom: 28px;
+      background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-tagline {
+      font-size: 16px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    .hero-tagline-en {
+      font-size: 13px;
+      color: var(--text-faint);
+      font-style: italic;
+      margin-bottom: 40px;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-cta {
+      display: inline-block;
+      padding: 18px 48px;
+      background: linear-gradient(135deg, var(--gold) 0%, #c89840 100%);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-align: center;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 24px rgba(224,180,92,0.25);
+    }
+    .btn-cta:hover { box-shadow: 0 4px 32px rgba(224,180,92,0.35); transform: translateY(-1px); }
+    .btn-cta:active { opacity: 0.85; transform: scale(0.98); }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.1em;
+      line-height: 1.8;
+    }
+    .hero-sub-en {
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+    }
+
+    /* ── Section shared ────────────────────────────────────── */
+    section {
+      padding: 100px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(24px, 4vw, 36px);
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-title-en {
+      font-size: 12px;
+      color: var(--text-faint);
+      letter-spacing: 0.15em;
+      margin-bottom: 48px;
+    }
+    .sep {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+      margin: 0 auto;
+      max-width: 200px;
+    }
+
+    /* ── Features grid ─────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 28px 24px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .feature-card:hover {
+      border-color: var(--border);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .feature-title {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .feature-title-en {
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .feature-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── Steps ─────────────────────────────────────────────── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 32px;
+      counter-reset: step;
+    }
+    .step {
+      text-align: center;
+      counter-increment: step;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: var(--serif);
+      font-size: 20px;
+      margin-bottom: 18px;
+    }
+    .step-label {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .step-label-en {
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Technical highlights ──────────────────────────────── */
+    .tech-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .tech-list li {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .tech-list li::before {
+      content: '—';
+      color: var(--gold);
+      margin-right: 10px;
+    }
+
+    /* ── Footer ────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 48px 24px;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.15em;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      section { padding: 64px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .tech-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-logo fade-in">
+      <span class="mark">&#9654;</span> CINEMA SLIDE
+    </div>
+    <h1 class="hero-title fade-in">CINEMA SLIDE</h1>
+    <p class="hero-tagline fade-in">&#20889;&#30495;&#12363;&#12425;&#12289;&#26144;&#30011;&#12398;&#12424;&#12358;&#12394;&#12473;&#12521;&#12452;&#12489;&#12471;&#12519;&#12540;&#12434;&#12290;</p>
+    <p class="hero-tagline-en fade-in">Turn your photos into cinematic slideshows.</p>
+    <a href="slideshow-maker.html" class="btn-cta fade-in">&#20170;&#12377;&#12368;&#22987;&#12417;&#12427; / Launch App</a>
+    <p class="hero-sub fade-in">&#12502;&#12521;&#12454;&#12470;&#12384;&#12369;&#12391;&#23436;&#32080;&#12290;&#12450;&#12459;&#12454;&#12531;&#12488;&#19981;&#35201;&#12290;&#23436;&#20840;&#28961;&#26009;&#12290;</p>
+    <p class="hero-sub-en fade-in">100% in-browser. No account. Free.</p>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Features -->
+  <section id="features">
+    <h2 class="section-title fade-in">&#27231;&#33021;</h2>
+    <p class="section-title-en fade-in">FEATURES</p>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <span class="feature-icon">&#127916;</span>
+        <div class="feature-title">&#12502;&#12521;&#12454;&#12470;&#12391;&#21205;&#30011;&#20316;&#25104;</div>
+        <div class="feature-title-en">Video creation in browser</div>
+        <p class="feature-desc">WebCodecs H.264&#12456;&#12531;&#12467;&#12540;&#12487;&#12451;&#12531;&#12464;&#12391;&#12289;&#12450;&#12483;&#12503;&#12525;&#12540;&#12489;&#19981;&#35201;&#12290;&#12502;&#12521;&#12454;&#12470;&#12384;&#12369;&#12391;MP4&#12434;&#29983;&#25104;&#12290;</p>
+      </div>
+      <div class="feature-card fade-in">
+        <span class="feature-icon">&#128274;</span>
+        <div class="feature-title">&#12503;&#12521;&#12452;&#12496;&#12471;&#12540;&#37325;&#35222;</div>
+        <div class="feature-title-en">Privacy first</div>
+        <p class="feature-desc">&#20889;&#30495;&#12399;&#12487;&#12496;&#12452;&#12473;&#12363;&#12425;&#22806;&#12395;&#20986;&#12414;&#12379;&#12435;&#12290;&#12469;&#12540;&#12496;&#12540;&#12408;&#12398;&#36865;&#20449;&#12399;&#19968;&#20999;&#12394;&#12375;&#12290;</p>
+      </div>
+      <div class="feature-card fade-in">
+        <span class="feature-icon">&#128241;</span>
+        <div class="feature-title">iOS Safari&#23550;&#24540;</div>
+        <div class="feature-title-en">iOS Safari compatible</div>
+        <p class="feature-desc">iPhone&#12539;iPad&#12398;Safari&#12391;&#12418;&#21205;&#20316;&#12290;&#12450;&#12503;&#12522;&#12398;&#12452;&#12531;&#12473;&#12488;&#12540;&#12523;&#19981;&#35201;&#12290;</p>
+      </div>
+      <div class="feature-card fade-in">
+        <span class="feature-icon">&#127925;</span>
+        <div class="feature-title">BGM&#23550;&#24540;</div>
+        <div class="feature-title-en">Background music</div>
+        <p class="feature-desc">&#12362;&#22909;&#12365;&#12394;&#38899;&#27005;&#12501;&#12449;&#12452;&#12523;&#12434;&#36861;&#21152;&#12375;&#12390;&#12289;&#12473;&#12521;&#12452;&#12489;&#12471;&#12519;&#12540;&#12395;BGM&#12434;&#12388;&#12369;&#12425;&#12428;&#12414;&#12377;&#12290;</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- How it works -->
+  <section id="how">
+    <h2 class="section-title fade-in">&#20351;&#12356;&#26041;</h2>
+    <p class="section-title-en fade-in">HOW IT WORKS</p>
+    <div class="steps">
+      <div class="step fade-in">
+        <div class="step-num">1</div>
+        <div class="step-label">&#20889;&#30495;&#12434;&#36984;&#12406;</div>
+        <div class="step-label-en">Select photos</div>
+      </div>
+      <div class="step fade-in">
+        <div class="step-num">2</div>
+        <div class="step-label">&#35373;&#23450;&#12377;&#12427;</div>
+        <div class="step-label-en">Customize</div>
+      </div>
+      <div class="step fade-in">
+        <div class="step-num">3</div>
+        <div class="step-label">MP4&#12391;&#26360;&#12365;&#20986;&#12377;</div>
+        <div class="step-label-en">Export as MP4</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- Technical highlights -->
+  <section id="tech">
+    <h2 class="section-title fade-in">&#25216;&#34899;&#30340;&#12394;&#29305;&#24500;</h2>
+    <p class="section-title-en fade-in">TECHNICAL HIGHLIGHTS</p>
+    <ul class="tech-list fade-in">
+      <li>Ken Burns, crossfade, slide, wipe transitions</li>
+      <li>480p / 720p / 1080p, square, portrait</li>
+      <li>Per-photo duration control</li>
+      <li>Title and credits cards</li>
+    </ul>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2024 CINEMA SLIDE
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
