@@ -726,6 +726,10 @@
     <div class="sep"></div>
     <button class="btn-primary" id="btn-export" data-i18n="btn_export">🎬 &nbsp; ビデオを作成する</button>
     <div id="estimate-info" class="estimate-info"></div>
+    <div style="margin-top:1.2rem;font-size:11px;color:#888;line-height:1.6;text-align:center">
+      <span data-i18n="disclaimer_copyright">使用する写真と音楽の著作権・利用許諾はご自身の責任で確認してください。</span><br>
+      <a href="./privacy.html" style="color:#7db8e0" data-i18n="link_privacy">プライバシーポリシー</a> · <a href="./terms.html" style="color:#7db8e0" data-i18n="link_terms">利用規約</a>
+    </div>
   </div>
 </div>
 
@@ -931,7 +935,13 @@ const i18n = {
     error_browser_unsupported: 'このブラウザは動画エクスポートに対応していません。\niOS 17以上のSafariをご使用ください。',
     error_codec_unsupported: 'コーデック (H.264) はこのデバイスでサポートされていません。',
     error_audio_encoder_unsupported: 'このブラウザはAudioEncoderに対応していないため、音楽なしで出力されます。',
+    error_audio_invalid_type: '音声ファイルを選択してください（選択されたファイルは音声形式ではありません）',
+    error_audio_decode_failed: '音声ファイルのデコードに失敗しました。別のファイルをお試しください。',
+    error_image_load_failed: '枚の画像の読み込みに失敗しました。該当フレームは黒画面になります。',
     error_generic: 'エラーが発生しました: ',
+    disclaimer_copyright: '使用する写真と音楽の著作権・利用許諾はご自身の責任で確認してください。',
+    link_privacy: 'プライバシーポリシー',
+    link_terms: '利用規約',
     estimate_mb: 'MB',
     estimate_min: '分',
     estimate_sec: '秒',
@@ -1027,7 +1037,13 @@ const i18n = {
     error_browser_unsupported: 'This browser does not support video export.\nPlease use Safari 17+ on iOS.',
     error_codec_unsupported: 'H.264 codec is not supported on this device.',
     error_audio_encoder_unsupported: 'This browser does not support AudioEncoder. Video will be exported without music.',
+    error_audio_invalid_type: 'Please select an audio file (the selected file is not an audio format)',
+    error_audio_decode_failed: 'Failed to decode audio file. Please try a different file.',
+    error_image_load_failed: ' image(s) failed to load. Those frames will appear black.',
     error_generic: 'An error occurred: ',
+    disclaimer_copyright: 'You are responsible for ensuring you have rights to all photos and music used.',
+    link_privacy: 'Privacy Policy',
+    link_terms: 'Terms of Service',
     estimate_mb: 'MB',
     estimate_min: 'min',
     estimate_sec: 'sec',
@@ -1432,6 +1448,11 @@ $('btn-audio-select').addEventListener('click', () => $('audio-input').click());
 $('audio-input').addEventListener('change', e => {
   const f = e.target.files[0];
   if (!f) return;
+  if (!f.type.startsWith('audio/')) {
+    showError(t('error_audio_invalid_type'));
+    e.target.value = '';
+    return;
+  }
   audioFile = f;
   $('audio-file-name').textContent = f.name;
   $('btn-audio-clear').style.display = '';
@@ -1840,8 +1861,12 @@ async function preloadImages() {
   }
   setStatus(`${t('status_photos_ready')}（${preloadCount} ${t('status_preloaded')}）`);
   updateProgress(0.15);
+  if (imageLoadFailCount > 0) {
+    showError(imageLoadFailCount + t('error_image_load_failed'));
+  }
 }
 
+let imageLoadFailCount = 0;
 async function ensureImageLoaded(idx) {
   if (idx < 0 || idx >= photos.length) return;
   if (images[idx]) return;
@@ -1849,7 +1874,7 @@ async function ensureImageLoaded(idx) {
   const url = URL.createObjectURL(photos[idx]);
   images[idx] = await new Promise(res => {
     im.onload  = () => { URL.revokeObjectURL(url); res(im); };
-    im.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    im.onerror = () => { URL.revokeObjectURL(url); imageLoadFailCount++; res(null); };
     im.src = url;
   });
 }
@@ -1870,6 +1895,7 @@ async function runExport() {
   showScreen('encoding');
   encodingAborted = false;
   encodingError = null;
+  imageLoadFailCount = 0;
 
   if (typeof trackEvent === 'function') trackEvent('export_start', {
     photos: photos.length, resolution: settings.width + 'x' + settings.height,
@@ -1937,8 +1963,13 @@ async function runExport() {
     if (audioFile) {
       setStatus(t('status_preparing_audio'));
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: audioSampleRate });
-      const audioArrayBuf = await audioFile.arrayBuffer();
-      const audioBuffer = await audioCtx.decodeAudioData(audioArrayBuf);
+      let audioArrayBuf, audioBuffer;
+      try {
+        audioArrayBuf = await audioFile.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(audioArrayBuf);
+      } catch (audioErr) {
+        throw new Error(t('error_audio_decode_failed'));
+      }
 
       audioNumChannels = Math.min(audioBuffer.numberOfChannels, 2);
       const totalDur = timeline.totalDur;
@@ -2202,6 +2233,10 @@ $('btn-profile-clear').addEventListener('click', () => {
 
 function applyProfile(p) {
   if (!p) return;
+  // Validate numeric fields to prevent NaN from corrupted localStorage
+  if (p.photoDuration != null && isNaN(p.photoDuration)) p.photoDuration = 3;
+  if (p.fadeDuration != null && isNaN(p.fadeDuration)) p.fadeDuration = 0.8;
+  if (p.fps != null && isNaN(p.fps)) p.fps = 15;
   // Apply to main setup form
   if (p.photoDuration != null) {
     $('inp-duration').value = p.photoDuration;
@@ -2214,6 +2249,8 @@ function applyProfile(p) {
     settings.fadeDuration = p.fadeDuration;
   }
   if (p.resolution) {
+    const parts = p.resolution.split('x');
+    if (parts.length !== 2 || parts.some(v => isNaN(Number(v)))) p.resolution = '1280x720';
     $('inp-resolution').value = p.resolution;
     const [w, h] = p.resolution.split('x').map(Number);
     settings.width = w; settings.height = h;
@@ -2226,12 +2263,12 @@ function applyProfile(p) {
   // Auto-fill credits if empty
   if (p.name && !$('inp-credits').value.trim()) {
     $('inp-credits').value = p.name;
+  }
+}
 
 // Register service worker for PWA / offline support
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-  }
 }
 
 // ── Init: apply saved profile on load ───────────────────────
