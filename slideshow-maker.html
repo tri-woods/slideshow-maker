@@ -637,7 +637,7 @@
     <div class="card-fields" id="title-card-fields">
       <div class="field">
         <label for="inp-title" data-i18n="label_title">タイトル</label>
-        <input type="text" id="inp-title" data-i18n-placeholder="placeholder_title" placeholder="例: Our Summer 2024">
+        <input type="text" id="inp-title" data-i18n-placeholder="placeholder_title" placeholder="例: Our Summer 2026">
       </div>
       <div class="field">
         <label for="inp-subtitle" data-i18n="label_subtitle">サブタイトル</label>
@@ -654,7 +654,7 @@
     <div class="card-fields" id="credits-card-fields">
       <div class="field">
         <label for="inp-credits" data-i18n="label_credits">クレジットテキスト（最後に表示）</label>
-        <textarea id="inp-credits" data-i18n-placeholder="placeholder_credits" placeholder="例: Photography by Taro Yamada&#10;2024 — All Rights Reserved"></textarea>
+        <textarea id="inp-credits" data-i18n-placeholder="placeholder_credits" placeholder="例: Photography by Taro Yamada&#10;2026 — All Rights Reserved"></textarea>
       </div>
     </div>
 
@@ -713,7 +713,8 @@
         <span id="audio-file-name" style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="audio_no_file">未選択</span>
         <button class="btn-change" id="btn-audio-clear" style="display:none" data-i18n="btn_audio_clear">削除</button>
       </div>
-      <input type="file" id="audio-input" accept="audio/*" style="display:none">
+      <input type="file" id="audio-input" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.wma" style="display:none">
+      <div style="font-size:10px;color:#666;margin-top:4px" data-i18n="audio_formats_hint">対応形式: MP3, M4A, AAC, WAV, OGG, FLAC</div>
     </div>
     <div class="field">
       <label data-i18n="label_bgm_volume">BGM音量</label>
@@ -728,7 +729,7 @@
     <div id="estimate-info" class="estimate-info"></div>
     <div style="margin-top:1.2rem;font-size:11px;color:#888;line-height:1.6;text-align:center">
       <span data-i18n="disclaimer_copyright">使用する写真と音楽の著作権・利用許諾はご自身の責任で確認してください。</span><br>
-      <a href="./privacy.html" style="color:#7db8e0" data-i18n="link_privacy">プライバシーポリシー</a> · <a href="./terms.html" style="color:#7db8e0" data-i18n="link_terms">利用規約</a>
+      <a href="./privacy.html" target="_blank" rel="noopener" style="color:#7db8e0" data-i18n="link_privacy">プライバシーポリシー</a> · <a href="./terms.html" target="_blank" rel="noopener" style="color:#7db8e0" data-i18n="link_terms">利用規約</a>
     </div>
   </div>
 </div>
@@ -858,12 +859,12 @@ const i18n = {
     photos_selected: '枚選択済み',
     show_title_card: 'タイトル画面を表示',
     label_title: 'タイトル',
-    placeholder_title: '例: Our Summer 2024',
+    placeholder_title: '例: Our Summer 2026',
     label_subtitle: 'サブタイトル',
     placeholder_subtitle: '例: A Collection of Memories',
     show_credits_card: 'クレジット画面を表示',
     label_credits: 'クレジットテキスト（最後に表示）',
-    placeholder_credits: '例: Photography by Taro Yamada\n2024 — All Rights Reserved',
+    placeholder_credits: '例: Photography by Taro Yamada\n2026 — All Rights Reserved',
     label_duration: '1枚あたりの表示時間',
     label_fade: 'トランジション時間（暗転の速さ）',
     label_transition: 'トランジション効果',
@@ -942,6 +943,7 @@ const i18n = {
     disclaimer_copyright: '使用する写真と音楽の著作権・利用許諾はご自身の責任で確認してください。',
     link_privacy: 'プライバシーポリシー',
     link_terms: '利用規約',
+    audio_formats_hint: '対応形式: MP3, M4A, AAC, WAV, OGG, FLAC',
     estimate_mb: 'MB',
     estimate_min: '分',
     estimate_sec: '秒',
@@ -960,12 +962,12 @@ const i18n = {
     photos_selected: 'photos selected',
     show_title_card: 'Show title card',
     label_title: 'Title',
-    placeholder_title: 'e.g. Our Summer 2024',
+    placeholder_title: 'e.g. Our Summer 2026',
     label_subtitle: 'Subtitle',
     placeholder_subtitle: 'e.g. A Collection of Memories',
     show_credits_card: 'Show credits card',
     label_credits: 'Credits text (shown at end)',
-    placeholder_credits: 'e.g. Photography by Taro Yamada\n2024 — All Rights Reserved',
+    placeholder_credits: 'e.g. Photography by Taro Yamada\n2026 — All Rights Reserved',
     label_duration: 'Duration per photo',
     label_fade: 'Transition duration',
     label_transition: 'Transition effect',
@@ -1044,6 +1046,7 @@ const i18n = {
     disclaimer_copyright: 'You are responsible for ensuring you have rights to all photos and music used.',
     link_privacy: 'Privacy Policy',
     link_terms: 'Terms of Service',
+    audio_formats_hint: 'Supported formats: MP3, M4A, AAC, WAV, OGG, FLAC',
     estimate_mb: 'MB',
     estimate_min: 'min',
     estimate_sec: 'sec',

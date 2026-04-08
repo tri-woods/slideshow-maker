@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Service — CINEMA SLIDE</title>
+<title>Terms of Service / 利用規約 — CINEMA SLIDE</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 2rem 1rem; line-height: 1.7; color: #e0e0e0; background: #0a0a0f; }
   h1 { color: #e0b45c; font-size: 1.5rem; }
   h2 { color: #e0b45c; font-size: 1.15rem; margin-top: 2rem; }
   a { color: #7db8e0; }
   .updated { font-size: 0.85rem; color: #888; }
+  .lang-toggle { text-align: right; margin-bottom: 1rem; }
+  .lang-toggle button { background: none; border: 1px solid #555; color: #e0e0e0; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .lang-toggle button.active { background: #e0b45c; color: #0a0a0f; border-color: #e0b45c; }
+  .lang-section { display: none; }
+  .lang-section.active { display: block; }
 </style>
 </head>
 <body>
+<div class="lang-toggle">
+  <button id="btn-en" class="active" onclick="showLang('en')">English</button>
+  <button id="btn-ja" onclick="showLang('ja')">日本語</button>
+</div>
+
+<!-- English -->
+<div id="lang-en" class="lang-section active">
 <h1>Terms of Service</h1>
 <p class="updated">Last updated: April 8, 2026</p>
 
@@ -68,5 +80,79 @@
 <p>If you have questions about these Terms, please open an issue on our <a href="https://github.com/tri-woods/slideshow-maker">GitHub repository</a>.</p>
 
 <p><a href="./slideshow-maker.html">&larr; Back to CINEMA SLIDE</a></p>
+</div>
+
+<!-- Japanese -->
+<div id="lang-ja" class="lang-section">
+<h1>利用規約</h1>
+<p class="updated">最終更新日: 2026年4月8日</p>
+
+<h2>1. 規約への同意</h2>
+<p>CINEMA SLIDE（以下「本アプリケーション」）を使用することにより、本利用規約に同意したものとみなされます。同意いただけない場合は、本アプリケーションの使用をお控えください。</p>
+
+<h2>2. サービスの説明</h2>
+<p>CINEMA SLIDEは、写真コレクションをMP4スライドショー動画に変換する無料のブラウザベースツールです。すべての処理はお使いのブラウザ内で行われます。本アプリケーションは無料で提供されます。</p>
+
+<h2>3. ユーザーコンテンツと著作権</h2>
+<p><strong>本アプリケーションで使用するすべての写真、音楽、テキストについて、ユーザーご自身が全責任を負うものとします。</strong>本アプリケーションを使用することにより、以下を表明し保証するものとします：</p>
+<ul>
+  <li>アップロードするすべてのコンテンツについて、必要な権利、ライセンス、許可を取得していること</li>
+  <li>当該コンテンツの使用が第三者の知的財産権、プライバシー権、その他の法的権利を侵害しないこと</li>
+  <li>違法、有害、または適用法令に違反するコンテンツの作成に本アプリケーションを使用しないこと</li>
+</ul>
+<p>CINEMA SLIDEはユーザーのコンテンツを監視、審査、保存することはありません。ユーザーによる著作権侵害または第三者コンテンツの不正使用について、当方は一切の責任を負いません。</p>
+
+<h2>4. ウォーターマーク</h2>
+<p>CINEMA SLIDEの無料版を使用してエクスポートされたすべての動画には、動画の最後にブランドのウォーターマークカードが含まれます。このウォーターマークは、許可なく削除、隠蔽、改変することはできません。</p>
+
+<h2>5. 保証の免責</h2>
+<p><strong>本アプリケーションは「現状有姿」で提供され、明示または黙示を問わず、いかなる種類の保証も伴いません。</strong>以下について保証するものではありません：</p>
+<ul>
+  <li>本アプリケーションにエラーがないこと、または中断なく動作すること</li>
+  <li>出力される動画の品質がお客様の特定の要件を満たすこと</li>
+  <li>本アプリケーションがすべてのブラウザまたはデバイスと互換性があること</li>
+  <li>ブラウザの終了、クラッシュ、ページの更新時に、作業中のデータが保持されること</li>
+</ul>
+
+<h2>6. 責任の制限</h2>
+<p>法律で認められる最大限の範囲において、CINEMA SLIDEおよびその開発者は、以下を含むがこれらに限定されない間接的、偶発的、特別、結果的、または懲罰的な損害について一切の責任を負いません：</p>
+<ul>
+  <li>データまたは作業中の内容の喪失</li>
+  <li>本アプリケーションを使用できないこと</li>
+  <li>著作権で保護された素材の使用に起因する請求</li>
+  <li>本アプリケーションの出力への依存</li>
+</ul>
+
+<h2>7. ブラウザ要件</h2>
+<p>本アプリケーションには、WebCodecs APIをサポートするモダンなWebブラウザ（Safari 17以上、Chrome 94以上、または互換性のあるブラウザ）が必要です。古いブラウザでは正常に動作しない場合があります。非対応ブラウザに起因する問題について、当方は責任を負いません。</p>
+
+<h2>8. 変更</h2>
+<p>当方は、予告なしに本アプリケーションの変更、一時停止、または廃止を行う権利を留保します。本規約は随時更新される場合があります。変更後も本アプリケーションを継続して使用することにより、更新された規約に同意したものとみなされます。</p>
+
+<h2>9. オープンソース</h2>
+<p>CINEMA SLIDEはMITライセンスの下で公開されています。ソースコードは<a href="https://github.com/tri-woods/slideshow-maker">GitHub</a>で入手可能です。ソースコードの使用にはMITライセンスの条件が適用されます。</p>
+
+<h2>10. 準拠法</h2>
+<p>本規約は適用される法律に準拠し、それに従って解釈されるものとします。本アプリケーションの使用に起因する紛争は、適切な管轄裁判所において解決されるものとします。</p>
+
+<h2>お問い合わせ</h2>
+<p>本利用規約についてご質問がある場合は、<a href="https://github.com/tri-woods/slideshow-maker">GitHubリポジトリ</a>でIssueを作成してください。</p>
+
+<p><a href="./slideshow-maker.html">&larr; CINEMA SLIDEに戻る</a></p>
+</div>
+
+<script>
+function showLang(lang) {
+  document.querySelectorAll('.lang-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+  document.getElementById('btn-' + lang).classList.add('active');
+}
+// Auto-detect language from app preference
+try {
+  const saved = localStorage.getItem('cinema-slide-lang');
+  if (saved === 'ja') showLang('ja');
+} catch(_) {}
+</script>
 </body>
 </html>

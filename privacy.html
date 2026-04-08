@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — CINEMA SLIDE</title>
+<title>Privacy Policy / プライバシーポリシー — CINEMA SLIDE</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 2rem 1rem; line-height: 1.7; color: #e0e0e0; background: #0a0a0f; }
   h1 { color: #e0b45c; font-size: 1.5rem; }
   h2 { color: #e0b45c; font-size: 1.15rem; margin-top: 2rem; }
   a { color: #7db8e0; }
   .updated { font-size: 0.85rem; color: #888; }
+  .lang-toggle { text-align: right; margin-bottom: 1rem; }
+  .lang-toggle button { background: none; border: 1px solid #555; color: #e0e0e0; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .lang-toggle button.active { background: #e0b45c; color: #0a0a0f; border-color: #e0b45c; }
+  .lang-section { display: none; }
+  .lang-section.active { display: block; }
 </style>
 </head>
 <body>
+<div class="lang-toggle">
+  <button id="btn-en" class="active" onclick="showLang('en')">English</button>
+  <button id="btn-ja" onclick="showLang('ja')">日本語</button>
+</div>
+
+<!-- English -->
+<div id="lang-en" class="lang-section active">
 <h1>Privacy Policy</h1>
 <p class="updated">Last updated: April 8, 2026</p>
 
@@ -57,5 +69,68 @@
 <p>If you have questions about this Privacy Policy, please open an issue on our <a href="https://github.com/tri-woods/slideshow-maker">GitHub repository</a>.</p>
 
 <p><a href="./slideshow-maker.html">&larr; Back to CINEMA SLIDE</a></p>
+</div>
+
+<!-- Japanese -->
+<div id="lang-ja" class="lang-section">
+<h1>プライバシーポリシー</h1>
+<p class="updated">最終更新日: 2026年4月8日</p>
+
+<h2>概要</h2>
+<p>CINEMA SLIDEはブラウザベースの動画作成ツールです。<strong>プライバシーの保護は本アプリケーションの設計の根幹です。</strong>すべての写真・動画処理はお使いのブラウザ内で完結します。写真や動画がデバイスの外に送信されることはありません。</p>
+
+<h2>収集しないデータ</h2>
+<ul>
+  <li>写真、動画、音声ファイルの収集、アップロード、保存、送信は行いません</li>
+  <li>アカウント作成やログインは不要です</li>
+  <li>トラッキング用のCookieは使用しません</li>
+  <li>サードパーティのアナリティクスサービスは使用しません</li>
+  <li>第三者とのデータ共有は行いません</li>
+</ul>
+
+<h2>アプリケーションの仕組み</h2>
+<p>CINEMA SLIDEはWebCodecs APIを使用して、すべての画像処理と動画生成をお使いのブラウザ内で行います。写真はブラウザのメモリに読み込まれ、キャンバスに描画され、MP4形式にエンコードされ、ダウンロード可能な状態になります。これらの処理はすべてサーバーとの通信なしに行われます。</p>
+
+<h2>ローカルストレージ</h2>
+<p>本アプリケーションはブラウザのlocalStorageを使用して以下の情報を保存します：</p>
+<ul>
+  <li><strong>言語設定</strong>（英語または日本語）</li>
+  <li><strong>ユーザープロフィール設定</strong>（デフォルトの表示時間、解像度、FPS、クレジット用の表示名）</li>
+  <li><strong>匿名の使用イベント</strong>（例：「エクスポート開始」「エクスポート完了」）診断目的でローカルにのみ保存され、外部に送信されることはありません。最大200件まで保持されます。</li>
+</ul>
+<p>これらのデータはブラウザのサイトデータを消去するか、プロフィール設定の「リセット」ボタンからいつでも削除できます。</p>
+
+<h2>外部リソース</h2>
+<p>本アプリケーションは以下の外部リソースを読み込みます：</p>
+<ul>
+  <li><strong>Google Fonts</strong>（fonts.googleapis.com）— Playfair DisplayおよびIBM Plex Monoフォント。Googleの<a href="https://developers.google.com/fonts/faq/privacy">Font APIプライバシーポリシー</a>が適用されます。</li>
+  <li><strong>mp4-muxerライブラリ</strong>（cdn.jsdelivr.netまたはesm.sh）— MP4ファイル組み立てに使用するオープンソースのJavaScriptライブラリ。これらのCDNにユーザーデータが送信されることはありません。</li>
+</ul>
+
+<h2>児童のプライバシー</h2>
+<p>本アプリケーションは13歳未満の児童からのデータ収集を意図していません。すべてのユーザーから個人データを収集しないため、特別な措置は必要ありません。</p>
+
+<h2>ポリシーの変更</h2>
+<p>本プライバシーポリシーは随時更新される場合があります。変更はこのページに反映され、更新日が記載されます。</p>
+
+<h2>お問い合わせ</h2>
+<p>本プライバシーポリシーについてご質問がある場合は、<a href="https://github.com/tri-woods/slideshow-maker">GitHubリポジトリ</a>でIssueを作成してください。</p>
+
+<p><a href="./slideshow-maker.html">&larr; CINEMA SLIDEに戻る</a></p>
+</div>
+
+<script>
+function showLang(lang) {
+  document.querySelectorAll('.lang-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+  document.getElementById('btn-' + lang).classList.add('active');
+}
+// Auto-detect language from app preference
+try {
+  const saved = localStorage.getItem('cinema-slide-lang');
+  if (saved === 'ja') showLang('ja');
+} catch(_) {}
+</script>
 </body>
 </html>
