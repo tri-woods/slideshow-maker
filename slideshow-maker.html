@@ -374,17 +374,38 @@
     .profile-btn:active { border-color: var(--gold); background: var(--gold-faint); }
     .profile-btn svg { width: 16px; height: 16px; }
 
+    .lang-wrap { position: relative; }
     .lang-btn {
-      height: 28px; padding: 0 10px;
-      border-radius: 14px;
+      width: 32px; height: 32px; border-radius: 50%;
       border: 1px solid var(--border); background: transparent;
       color: var(--gold); cursor: pointer;
-      font-family: var(--mono); font-size: 10px; font-weight: 500;
-      letter-spacing: 0.1em;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; line-height: 1;
       transition: border-color 0.2s, background 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
     .lang-btn:active { border-color: var(--gold); background: var(--gold-faint); }
+    .lang-menu {
+      position: absolute; top: 40px; right: 0;
+      background: var(--bg2); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 6px 0;
+      min-width: 140px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 110;
+    }
+    .lang-menu.visible { opacity: 1; pointer-events: all; transform: none; }
+    .lang-menu-item {
+      display: block; width: 100%; padding: 8px 16px;
+      background: none; border: none; cursor: pointer;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+      color: var(--text-dim); text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lang-menu-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .lang-menu-item.active { color: var(--gold); }
 
     .profile-overlay {
       position: fixed; inset: 0; z-index: 150;
@@ -564,7 +585,13 @@
     <div class="pill" id="pill-2">02</div>
     <div class="pill" id="pill-3">03</div>
   </div>
-  <button class="lang-btn" id="btn-lang" title="English / 日本語">EN</button>
+  <div class="lang-wrap">
+    <button class="lang-btn" id="btn-lang" title="Language">🌐</button>
+    <div class="lang-menu" id="lang-menu">
+      <button class="lang-menu-item" data-lang="ja">日本語</button>
+      <button class="lang-menu-item" data-lang="en">English</button>
+    </div>
+  </div>
   <button class="profile-btn" id="btn-profile" data-i18n-title="profile_btn_title" title="プロフィール設定">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -1030,9 +1057,11 @@ function applyLanguage() {
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     el.title = t(el.dataset.i18nTitle);
   });
-  // Update lang toggle button text
-  const langBtn = document.getElementById('btn-lang');
-  if (langBtn) langBtn.textContent = currentLang === 'ja' ? 'EN' : 'JP';
+  // Update lang menu active state
+  const langMenuEl = document.getElementById('lang-menu');
+  if (langMenuEl) langMenuEl.querySelectorAll('.lang-menu-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.lang === currentLang);
+  });
 }
 
 // ── State ──────────────────────────────────────────────────
@@ -1675,12 +1704,16 @@ function renderSingleLayer(info, width, height) {
   } else if (info.type === 'watermark') {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, width, height);
-    const wmSize = Math.round(width / 40);
-    ctx.font = `300 ${wmSize}px "IBM Plex Mono", monospace`;
-    ctx.fillStyle = `rgba(160,144,128,${info.alpha * 0.5})`;
+    const wmSize = Math.round(width / 22);
+    ctx.font = `400 ${wmSize}px "Playfair Display", Georgia, serif`;
+    ctx.fillStyle = `rgba(224,180,92,${info.alpha * 0.85})`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Made with CINEMA SLIDE', width / 2, height / 2);
+    ctx.fillText('CINEMA SLIDE', width / 2, height / 2 - wmSize * 0.4);
+    const subSize = Math.round(width / 55);
+    ctx.font = `300 ${subSize}px "IBM Plex Mono", monospace`;
+    ctx.fillStyle = `rgba(200,190,170,${info.alpha * 0.6})`;
+    ctx.fillText('cinemslide.app', width / 2, height / 2 + wmSize * 0.7);
   }
 
   ctx.restore();
@@ -2204,13 +2237,26 @@ if ('serviceWorker' in navigator) {
 // ── Init: apply saved profile on load ───────────────────────
 applyProfile(loadProfile());
 
-// ── i18n toggle ──────────────────────────────────────────────
-$('btn-lang').addEventListener('click', () => {
-  currentLang = currentLang === 'ja' ? 'en' : 'ja';
-  localStorage.setItem('cinema-slide-lang', currentLang);
-  applyLanguage();
-  if (typeof trackEvent === 'function') trackEvent('lang_change', { to: currentLang });
+// ── Language selector ──────────────────────────────────────────
+const langMenu = $('lang-menu');
+$('btn-lang').addEventListener('click', (e) => {
+  e.stopPropagation();
+  langMenu.classList.toggle('visible');
+  // Mark active item
+  langMenu.querySelectorAll('.lang-menu-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.lang === currentLang);
+  });
 });
+langMenu.querySelectorAll('.lang-menu-item').forEach(item => {
+  item.addEventListener('click', () => {
+    currentLang = item.dataset.lang;
+    localStorage.setItem('cinema-slide-lang', currentLang);
+    applyLanguage();
+    langMenu.classList.remove('visible');
+    if (typeof trackEvent === 'function') trackEvent('lang_change', { to: currentLang });
+  });
+});
+document.addEventListener('click', () => langMenu.classList.remove('visible'));
 
 // Apply language on init
 applyLanguage();
