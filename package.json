@@ -1,0 +1,16 @@
+{
+  "name": "cinema-slide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CINEMA SLIDE — browser-based photo slideshow to MP4 video maker",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}
