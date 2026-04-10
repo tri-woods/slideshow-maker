@@ -131,6 +131,15 @@ try {
   const saved = localStorage.getItem('cinema-slide-lang');
   if (saved === 'ja') showLang('ja');
 } catch(_) {}
+// The back link should close this tab (which was opened via target="_blank"
+// from the app) instead of navigating here to a fresh slideshow-maker.html
+// instance — which would look to the user like their photos were deleted.
+document.querySelectorAll('a[href="./slideshow-maker.html"]').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    window.close();
+  });
+});
 </script>
 </body>
 </html>
