@@ -82,10 +82,10 @@
       padding: 100px 28px 60px;
       max-width: 680px; margin: 0 auto;
       opacity: 0; transform: translateY(12px);
-      transition: opacity 0.5s, transform 0.5s;
-      pointer-events: none;
+      transition: opacity 0.5s, transform 0.5s, visibility 0.5s;
+      pointer-events: none; visibility: hidden;
     }
-    .screen.visible { opacity: 1; transform: none; pointer-events: all; }
+    .screen.visible { opacity: 1; transform: none; pointer-events: all; visibility: visible; }
 
     /* ── Screen 1: Setup ─────────────────────────────────── */
     .screen-title {
@@ -415,10 +415,10 @@
       position: fixed; inset: 0; z-index: 150;
       background: rgba(0,0,0,0.75);
       display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+      opacity: 0; pointer-events: none; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
     }
-    .profile-overlay.visible { opacity: 1; pointer-events: all; }
+    .profile-overlay.visible { opacity: 1; pointer-events: all; visibility: visible; }
     .profile-modal {
       width: 90%; max-width: 420px; max-height: 85vh; overflow-y: auto;
       background: var(--bg2); border: 1px solid rgba(255,255,255,0.06);

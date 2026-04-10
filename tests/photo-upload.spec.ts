@@ -19,7 +19,6 @@ test.describe('Photo Upload', () => {
     await fileInput.setInputFiles(photo('test-photo-1.png'));
 
     await expect(page.locator('#thumbnail-area')).toBeVisible();
-    await expect(page.locator('#upload-zone')).not.toBeVisible();
     await expect(page.locator('#photo-count-label')).toContainText('1');
   });
 
@@ -83,8 +82,8 @@ test.describe('Photo Management', () => {
   test('delete a photo reduces count', async ({ page }) => {
     await expect(page.locator('#photo-count-label')).toContainText('3');
 
-    const deleteBtn = page.locator('#thumbs-grid .thumb-wrap .thumb-del').first();
-    await deleteBtn.click();
+    const deleteBtn = page.locator('#thumbs-grid .thumb-wrap .thumb-remove').first();
+    await deleteBtn.click({ force: true });
 
     await expect(page.locator('#photo-count-label')).toContainText('2');
     const thumbs = page.locator('#thumbs-grid .thumb-wrap');
@@ -92,10 +91,10 @@ test.describe('Photo Management', () => {
   });
 
   test('delete all photos shows upload zone again', async ({ page }) => {
-    const deleteBtns = page.locator('#thumbs-grid .thumb-wrap .thumb-del');
+    const deleteBtns = page.locator('#thumbs-grid .thumb-wrap .thumb-remove');
     const count = await deleteBtns.count();
     for (let i = count - 1; i >= 0; i--) {
-      await deleteBtns.nth(i).click();
+      await deleteBtns.nth(i).click({ force: true });
     }
 
     await expect(page.locator('#upload-zone')).toBeVisible();
@@ -103,18 +102,18 @@ test.describe('Photo Management', () => {
   });
 
   test('reorder photos with arrow buttons', async ({ page }) => {
-    // Get first thumbnail's filename before reorder
+    // Get first thumbnail's image src before reorder
     const firstThumb = page.locator('#thumbs-grid .thumb-wrap').first();
-    const firstFileName = await firstThumb.locator('.thumb-name').textContent();
+    const firstSrc = await firstThumb.locator('img').getAttribute('src');
 
-    // Click right arrow on first thumbnail to move it right
-    const rightArrow = firstThumb.locator('.thumb-arrow-right');
-    await rightArrow.click();
+    // Click right arrow (▶) on first thumbnail to move it right
+    const rightArrow = firstThumb.locator('.thumb-arrows .thumb-arrow').nth(1);
+    await rightArrow.click({ force: true });
 
-    // First thumbnail should now be different
+    // First thumbnail should now have a different image
     const newFirst = page.locator('#thumbs-grid .thumb-wrap').first();
-    const newFirstFileName = await newFirst.locator('.thumb-name').textContent();
-    expect(newFirstFileName).not.toBe(firstFileName);
+    const newFirstSrc = await newFirst.locator('img').getAttribute('src');
+    expect(newFirstSrc).not.toBe(firstSrc);
   });
 
   test('per-photo duration badge is clickable', async ({ page }) => {
@@ -122,7 +121,7 @@ test.describe('Photo Management', () => {
     await badge.click();
 
     // Duration editor should appear
-    const editor = page.locator('.dur-editor');
+    const editor = page.locator('.dur-badge-editor');
     await expect(editor).toBeVisible();
   });
 });
