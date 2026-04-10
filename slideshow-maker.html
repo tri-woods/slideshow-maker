@@ -178,6 +178,10 @@
       display: block; font-size: 10px; letter-spacing: 0.2em;
       color: var(--text-dim); margin-bottom: 7px;
     }
+    .field-hint {
+      font-size: 10px; color: var(--text-faint); margin-top: 5px;
+      line-height: 1.5; letter-spacing: 0.02em;
+    }
     .field input[type=text],
     .field textarea,
     .field select {
@@ -666,6 +670,7 @@
         <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3">
         <div class="range-val"><span id="val-duration">3</span>s</div>
       </div>
+      <div class="field-hint" data-i18n="hint_duration">各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。</div>
     </div>
     <div class="field">
       <label for="inp-fade" data-i18n="label_fade">トランジション時間（暗転の速さ）</label>
@@ -673,6 +678,7 @@
         <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8">
         <div class="range-val"><span id="val-fade">0.8</span>s</div>
       </div>
+      <div class="field-hint" data-i18n="hint_fade">写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。</div>
     </div>
     <div class="field">
       <label for="inp-transition" data-i18n="label_transition">トランジション効果</label>
@@ -682,6 +688,7 @@
         <option value="slide" data-i18n="transition_slide">スライド（横方向）</option>
         <option value="wipe" data-i18n="transition_wipe">ワイプ（横方向）</option>
       </select>
+      <div class="field-hint" data-i18n="hint_transition">暗転＝一度黒くなって切替。クロスフェード＝2枚が重なって切替。スライド／ワイプ＝横方向にスライドして切替。</div>
     </div>
     <div class="field">
       <label for="inp-resolution" data-i18n="label_resolution">解像度 / クオリティ</label>
@@ -692,6 +699,7 @@
         <option value="1080x1080" data-i18n="res_square">スクエア 1:1 (1080×1080)</option>
         <option value="1080x1920" data-i18n="res_vertical">縦型 9:16 (1080×1920) — ストーリーズ</option>
       </select>
+      <div class="field-hint" data-i18n="hint_resolution">高解像度ほど高画質ですが、ファイルサイズが大きく処理時間も長くなります。SNS投稿には720pで十分です。</div>
     </div>
     <div class="field">
       <label for="inp-fps" data-i18n="label_fps">フレームレート</label>
@@ -701,8 +709,10 @@
         <option value="24" data-i18n="fps_24">24fps — シネマ</option>
         <option value="30" data-i18n="fps_30">30fps — スムーズ</option>
       </select>
+      <div class="field-hint" data-i18n="hint_fps">1秒あたりのコマ数。高いほど動きが滑らかですが、ファイルサイズが増えます。写真スライドショーには15fpsが最適です。</div>
     </div>
     <div class="toggle-field"><input type="checkbox" id="chk-ken-burns"><label for="chk-ken-burns" data-i18n="label_ken_burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
+    <div class="field-hint" style="margin-top:-8px;margin-bottom:16px" data-i18n="hint_ken_burns">写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。</div>
 
     <div class="sep"></div>
     <div class="form-section-title">AUDIO</div>
@@ -883,6 +893,12 @@ const i18n = {
     fps_24: '24fps — シネマ',
     fps_30: '30fps — スムーズ',
     label_ken_burns: 'Ken Burns エフェクト（パン＆ズーム）',
+    hint_duration: '各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。',
+    hint_fade: '写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。',
+    hint_transition: '暗転＝一度黒くなって切替。クロスフェード＝2枚が重なって切替。スライド／ワイプ＝横方向にスライドして切替。',
+    hint_resolution: '高解像度ほど高画質ですが、ファイルサイズが大きく処理時間も長くなります。SNS投稿には720pで十分です。',
+    hint_fps: '1秒あたりのコマ数。高いほど動きが滑らかですが、ファイルサイズが増えます。写真スライドショーには15fpsが最適です。',
+    hint_ken_burns: '写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。',
     label_bgm: 'BGM（任意）',
     btn_audio_select: '♪ 音楽を選択',
     audio_no_file: '未選択',
@@ -986,6 +1002,12 @@ const i18n = {
     fps_24: '24fps — Cinema',
     fps_30: '30fps — Smooth',
     label_ken_burns: 'Ken Burns Effect (Pan & Zoom)',
+    hint_duration: 'How long each photo stays on screen. Shorter for a snappy feel, longer to linger on each image.',
+    hint_fade: 'How long the transition between photos takes. Shorter for a crisp cut, longer for a dreamy feel.',
+    hint_transition: 'Fade to Black = fades through black. Crossfade = photos blend into each other. Slide/Wipe = photos move horizontally.',
+    hint_resolution: 'Higher resolution means better quality but larger file size and longer processing. 720p is great for social media.',
+    hint_fps: 'Frames per second. Higher = smoother motion but larger files. 15fps is ideal for photo slideshows.',
+    hint_ken_burns: 'Adds a slow zoom and pan to each photo for a cinematic look.',
     label_bgm: 'BGM (Optional)',
     btn_audio_select: '♪ Select Music',
     audio_no_file: 'None',
