@@ -321,10 +321,9 @@
     }
 
     /* ── Screen 3: Done ──────────────────────────────────── */
-    #screen-done { padding-top: 58px; min-height: auto; }
     .done-header {
       display: flex; align-items: center; gap: 12px;
-      margin-bottom: 10px;
+      margin-top: 18px; margin-bottom: 10px;
     }
     .done-check {
       width: 36px; height: 36px; border-radius: 50%;
@@ -770,6 +769,10 @@
 
 <!-- ── Screen 3: Done ────────────────────────────── -->
 <div class="screen" id="screen-done">
+  <video id="result-video" controls playsinline webkit-playsinline></video>
+
+  <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4" data-i18n="btn_download">⬇ &nbsp; ダウンロード（MP4）</a>
+
   <div class="done-header">
     <div class="done-check">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -783,9 +786,6 @@
     </div>
   </div>
 
-  <video id="result-video" controls playsinline webkit-playsinline></video>
-
-  <a id="download-link" class="btn-primary" href="#" download="slideshow.mp4" data-i18n="btn_download">⬇ &nbsp; ダウンロード（MP4）</a>
   <div class="gap16"></div>
   <button class="btn-secondary" id="btn-back-settings" data-i18n="btn_back_settings">← 設定を変更して再作成</button>
   <div class="gap16"></div>
@@ -1195,7 +1195,11 @@ function showScreen(name) {
   } else {
     hideBanner();
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Screens live in normal flow and stack vertically, so scrollTo(0) would
+  // land on whichever screen is first in the DOM — not necessarily the one
+  // we're showing. Scroll to the target screen's own top instead.
+  const target = screens[name];
+  window.scrollTo({ top: target ? target.offsetTop : 0, behavior: 'smooth' });
 }
 
 // ── File handling ─────────────────────────────────────────
