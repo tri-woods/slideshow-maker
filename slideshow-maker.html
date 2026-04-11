@@ -79,6 +79,7 @@
     /* ── Screens ─────────────────────────────────────────── */
     .screen {
       min-height: 100vh;
+      min-height: 100dvh; /* iOS Safari: account for dynamic toolbar */
       padding: 100px 28px 60px;
       max-width: 680px; margin: 0 auto;
       opacity: 0; transform: translateY(12px);
@@ -274,6 +275,18 @@
       display: flex; align-items: center; justify-content: center;
       background: rgba(0,0,0,0.5);
       font-size: 10px; letter-spacing: 0.2em; color: var(--gold);
+    }
+    .preview-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(224,180,92,0.9); color: #1a1a1a;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+      padding: 4px 10px; border-radius: 3px;
+      pointer-events: none;
+    }
+    .preview-hint {
+      font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em;
+      text-align: center; margin-top: -20px; margin-bottom: 20px;
+      line-height: 1.5;
     }
 
     .progress-bar-track {
@@ -574,6 +587,25 @@
       .pill { transition: none; }
       .status-banner { transition: none; }
     }
+
+    /* ── Mobile breakpoint (≤ 640px) ─────────────────────────
+       Tighter padding, cap encoding-preview height so progress
+       stats and cancel button stay above the fold on phones. */
+    @media (max-width: 640px) {
+      .screen { padding: 80px 18px 48px; }
+      .screen-sub { margin-bottom: 28px; }
+      #screen-encoding .canvas-preview-wrap {
+        max-height: 34vh;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 20px;
+      }
+      #screen-encoding #render-canvas {
+        max-height: 34vh;
+        width: auto; max-width: 100%;
+      }
+      .encoding-note { font-size: 11px; }
+      .btn-cancel { min-height: 44px; } /* iOS tap target minimum */
+    }
   </style>
 </head>
 <body>
@@ -750,7 +782,9 @@
 
   <div class="canvas-preview-wrap">
     <canvas id="render-canvas" width="1280" height="720"></canvas>
+    <div class="preview-badge" data-i18n="preview_badge">PREVIEW</div>
   </div>
+  <div class="preview-hint" data-i18n="preview_hint">※ プレビューは高速表示中です。完成した動画は設定した速度で再生されます。</div>
 
   <div id="status-msg" data-i18n="status_preparing">準備中...</div>
   <div class="progress-bar-track">
@@ -908,6 +942,8 @@ const i18n = {
     encoding_title: 'エンコード中',
     encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
     encoding_note: '<strong>⚠ 画面をオフにしないでください</strong><br>エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。',
+    preview_badge: 'プレビュー',
+    preview_hint: '※ プレビューは高速表示中です。完成した動画は設定した速度で再生されます。',
     btn_cancel: '✕ &nbsp; キャンセル',
     done_title: '完成しました',
     done_sub: 'SLIDESHOW VIDEO IS READY',
@@ -1017,6 +1053,8 @@ const i18n = {
     encoding_title: 'Encoding',
     encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
     encoding_note: '<strong>⚠ Do not turn off the screen</strong><br>Encoding will be interrupted if you turn off the screen or switch apps.<br>This may take several minutes depending on the number of photos.',
+    preview_badge: 'PREVIEW',
+    preview_hint: '※ Preview is sped up while encoding. The final video will play back at your chosen speed.',
     btn_cancel: '✕ &nbsp; Cancel',
     done_title: 'Complete',
     done_sub: 'SLIDESHOW VIDEO IS READY',
@@ -1116,6 +1154,26 @@ let encodingError = null;
 let exporting = false;
 let activeEncoder = null;
 let audioFile = null;
+let wakeLock = null;
+
+// Request a screen wake lock to prevent the device from sleeping during encoding.
+// Supported on Chrome/Edge 84+, Safari 16.4+. Silently no-ops on unsupported browsers.
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (_) { /* user denied or page not visible */ }
+}
+function releaseWakeLock() {
+  if (wakeLock) { try { wakeLock.release(); } catch(_) {} wakeLock = null; }
+}
+// Re-acquire on visibility change (iOS releases it when tab backgrounds)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && exporting && !wakeLock) {
+    requestWakeLock();
+  }
+});
 
 const settings = {
   title:      '',
@@ -1561,6 +1619,7 @@ $('btn-cancel').addEventListener('click', () => {
   }
   exporting = false;
   $('btn-export').disabled = false;
+  releaseWakeLock();
   showScreen('setup');
   setStatus(t('status_preparing'));
   updateProgress(0);
@@ -1925,6 +1984,7 @@ async function runExport() {
   encodingAborted = false;
   encodingError = null;
   imageLoadFailCount = 0;
+  requestWakeLock();
 
   if (typeof trackEvent === 'function') trackEvent('export_start', {
     photos: photos.length, resolution: settings.width + 'x' + settings.height,
@@ -2197,6 +2257,7 @@ async function runExport() {
     activeEncoder = null;
     exporting = false;
     $('btn-export').disabled = false;
+    releaseWakeLock();
   }
 }
 
