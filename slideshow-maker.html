@@ -265,9 +265,16 @@
       background: #000;
       margin-bottom: 28px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #render-canvas {
-      width: 100%; height: auto; display: block;
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 40vh;
     }
     .canvas-overlay {
       position: absolute; inset: 0;
@@ -762,7 +769,7 @@
     <span id="stat-eta">—</span>
   </div>
 
-  <div class="encoding-note" data-i18n="encoding_note"><strong>⚠ 画面をオフにしないでください</strong><br>エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。</div>
+  <div class="encoding-note" id="encoding-note" data-i18n="encoding_note"><strong>⚠ アプリを切り替えないでください</strong><br>エンコード中はアプリを切り替えたりバックグラウンドに移ると中断されます。<br>写真の枚数によって数分かかる場合があります。</div>
 
   <button class="btn-cancel" id="btn-cancel" data-i18n="btn_cancel">✕ &nbsp; キャンセル</button>
 </div>
@@ -907,7 +914,8 @@ const i18n = {
     btn_export: '🎬 &nbsp; ビデオを作成する',
     encoding_title: 'エンコード中',
     encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
-    encoding_note: '<strong>⚠ 画面をオフにしないでください</strong><br>エンコード中は画面をオフにしたりアプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。',
+    encoding_note: '<strong>⚠ アプリを切り替えないでください</strong><br>エンコード中はアプリを切り替えたりバックグラウンドに移ると中断されます。<br>写真の枚数によって数分かかる場合があります。',
+    encoding_note_wakelock: '<strong>✓ 画面はオフになりません</strong><br>エンコード中は画面が自動的にオンに保たれます。アプリを切り替えると中断されます。<br>写真の枚数によって数分かかる場合があります。',
     btn_cancel: '✕ &nbsp; キャンセル',
     done_title: '完成しました',
     done_sub: 'SLIDESHOW VIDEO IS READY',
@@ -1016,7 +1024,8 @@ const i18n = {
     btn_export: '🎬 &nbsp; Create Video',
     encoding_title: 'Encoding',
     encoding_sub: 'RENDERING — PLEASE KEEP THE SCREEN ON',
-    encoding_note: '<strong>⚠ Do not turn off the screen</strong><br>Encoding will be interrupted if you turn off the screen or switch apps.<br>This may take several minutes depending on the number of photos.',
+    encoding_note: '<strong>⚠ Do not switch apps</strong><br>Encoding will be interrupted if you switch apps or go to the background.<br>This may take several minutes depending on the number of photos.',
+    encoding_note_wakelock: '<strong>✓ Screen will stay on</strong><br>The screen will be kept awake automatically during encoding. Switching apps will interrupt it.<br>This may take several minutes depending on the number of photos.',
     btn_cancel: '✕ &nbsp; Cancel',
     done_title: 'Complete',
     done_sub: 'SLIDESHOW VIDEO IS READY',
@@ -1115,6 +1124,7 @@ let encodingAborted = false;
 let encodingError = null;
 let exporting = false;
 let activeEncoder = null;
+let wakeLock = null;
 let audioFile = null;
 
 const settings = {
@@ -1924,6 +1934,13 @@ async function runExport() {
   showScreen('encoding');
   encodingAborted = false;
   encodingError = null;
+  $('encoding-note').innerHTML = t('encoding_note');
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      $('encoding-note').innerHTML = t('encoding_note_wakelock');
+    } catch(_) {}
+  }
   imageLoadFailCount = 0;
 
   if (typeof trackEvent === 'function') trackEvent('export_start', {
@@ -2197,6 +2214,7 @@ async function runExport() {
     activeEncoder = null;
     exporting = false;
     $('btn-export').disabled = false;
+    if (wakeLock) { try { await wakeLock.release(); } catch(_) {} wakeLock = null; }
   }
 }
 
@@ -2323,6 +2341,13 @@ langMenu.querySelectorAll('.lang-menu-item').forEach(item => {
   });
 });
 document.addEventListener('click', () => langMenu.classList.remove('visible'));
+
+// Re-acquire wake lock if page becomes visible again during encoding
+document.addEventListener('visibilitychange', async () => {
+  if (exporting && document.visibilityState === 'visible' && 'wakeLock' in navigator) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {}
+  }
+});
 
 // Apply language on init
 applyLanguage();
