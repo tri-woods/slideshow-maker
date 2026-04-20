@@ -698,71 +698,73 @@
     <div class="field">
       <label for="inp-duration" data-i18n="label_duration">1枚あたりの表示時間</label>
       <div class="range-wrap">
-        <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3">
+        <input type="range" id="inp-duration" min="1" max="10" step="0.5" value="3" aria-describedby="hint-duration">
         <div class="range-val"><span id="val-duration">3</span>s</div>
       </div>
-      <div class="field-hint" data-i18n="hint_duration">各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。</div>
+      <div class="field-hint" id="hint-duration" data-i18n="hint_duration">各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。</div>
     </div>
     <div class="field">
       <label for="inp-fade" data-i18n="label_fade">トランジション時間（暗転の速さ）</label>
       <div class="range-wrap">
-        <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8">
+        <input type="range" id="inp-fade" min="0.3" max="2" step="0.1" value="0.8" aria-describedby="hint-fade">
         <div class="range-val"><span id="val-fade">0.8</span>s</div>
       </div>
-      <div class="field-hint" data-i18n="hint_fade">写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。</div>
+      <div class="field-hint" id="hint-fade" data-i18n="hint_fade">写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。</div>
     </div>
     <div class="field">
       <label for="inp-transition" data-i18n="label_transition">トランジション効果</label>
-      <select id="inp-transition">
+      <select id="inp-transition" aria-describedby="hint-transition">
         <option value="fade-to-black" data-i18n="transition_fade">暗転（フェード・トゥ・ブラック）</option>
         <option value="crossfade" data-i18n="transition_crossfade">クロスフェード（ディゾルブ）</option>
         <option value="slide" data-i18n="transition_slide">スライド（横方向）</option>
         <option value="wipe" data-i18n="transition_wipe">ワイプ（横方向）</option>
       </select>
-      <div class="field-hint" data-i18n="hint_transition">暗転＝一度黒くなって切替。クロスフェード＝2枚が重なって切替。スライド／ワイプ＝横方向にスライドして切替。</div>
+      <div class="field-hint" id="hint-transition" data-i18n="hint_transition">暗転＝一度黒くなって切替。クロスフェード＝2枚が重なって切替。スライド／ワイプ＝横方向にスライドして切替。</div>
     </div>
     <div class="field">
       <label for="inp-resolution" data-i18n="label_resolution">解像度 / クオリティ</label>
-      <select id="inp-resolution">
+      <select id="inp-resolution" aria-describedby="hint-resolution">
         <option value="1280x720" data-i18n="res_720">HD 720p (1280×720) — 推奨</option>
         <option value="854x480" data-i18n="res_480">SD 480p (854×480) — 高速・軽量</option>
         <option value="1920x1080">Full HD 1080p (1920×1080)</option>
         <option value="1080x1080" data-i18n="res_square">スクエア 1:1 (1080×1080)</option>
         <option value="1080x1920" data-i18n="res_vertical">縦型 9:16 (1080×1920) — ストーリーズ</option>
       </select>
-      <div class="field-hint" data-i18n="hint_resolution">高解像度ほど高画質ですが、ファイルサイズが大きく処理時間も長くなります。SNS投稿には720pで十分です。</div>
+      <div class="field-hint" id="hint-resolution" data-i18n="hint_resolution">720p＝SNS・メッセージ向けの標準画質。1080p＝YouTubeなど高画質配信向け。1:1＝Instagramフィード、9:16＝ストーリーズ／TikTok／Reels向け。高解像度ほどファイルサイズが大きく、処理時間も長くなります。</div>
     </div>
     <div class="field">
       <label for="inp-fps" data-i18n="label_fps">フレームレート</label>
-      <select id="inp-fps">
+      <select id="inp-fps" aria-describedby="hint-fps">
         <option value="12" data-i18n="fps_12">12fps — 軽量</option>
         <option value="15" selected data-i18n="fps_15">15fps — 標準</option>
         <option value="24" data-i18n="fps_24">24fps — シネマ</option>
         <option value="30" data-i18n="fps_30">30fps — スムーズ</option>
       </select>
-      <div class="field-hint" data-i18n="hint_fps">1秒あたりのコマ数。高いほど動きが滑らかですが、ファイルサイズが増えます。写真スライドショーには15fpsが最適です。</div>
+      <div class="field-hint" id="hint-fps" data-i18n="hint_fps">1秒あたりのコマ数。写真スライドショーは静止画が中心なので、12〜15fpsで十分きれいに仕上がります。24fpsは映画的な質感、30fpsは最も滑らかですがファイルサイズが増えます。</div>
     </div>
-    <div class="toggle-field"><input type="checkbox" id="chk-ken-burns"><label for="chk-ken-burns" data-i18n="label_ken_burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
-    <div class="field-hint" style="margin-top:-8px;margin-bottom:16px" data-i18n="hint_ken_burns">写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。</div>
+    <div class="toggle-field"><input type="checkbox" id="chk-ken-burns" aria-describedby="hint-ken-burns"><label for="chk-ken-burns" data-i18n="label_ken_burns">Ken Burns エフェクト（パン＆ズーム）</label></div>
+    <div class="field-hint" id="hint-ken-burns" style="margin-top:-8px;margin-bottom:16px" data-i18n="hint_ken_burns">写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。1枚ごとに左右交互にパンし、1.0倍から1.08倍までズームします。</div>
 
     <div class="sep"></div>
     <div class="form-section-title">AUDIO</div>
     <div class="field">
       <label data-i18n="label_bgm">BGM（任意）</label>
       <div style="display:flex;gap:10px;align-items:center">
-        <button class="btn-secondary" id="btn-audio-select" style="width:auto;padding:10px 16px;flex-shrink:0" data-i18n="btn_audio_select">♪ 音楽を選択</button>
+        <button class="btn-secondary" id="btn-audio-select" style="width:auto;padding:10px 16px;flex-shrink:0" aria-describedby="hint-bgm" data-i18n="btn_audio_select">♪ 音楽を選択</button>
         <span id="audio-file-name" style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="audio_no_file">未選択</span>
         <button class="btn-change" id="btn-audio-clear" style="display:none" data-i18n="btn_audio_clear">削除</button>
       </div>
       <input type="file" id="audio-input" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.wma" style="display:none">
       <div style="font-size:10px;color:#666;margin-top:4px" data-i18n="audio_formats_hint">対応形式: MP3, M4A, AAC, WAV, OGG, FLAC</div>
+      <div class="field-hint" id="hint-bgm" data-i18n="hint_bgm">音源は動画の長さに自動でトリミングされます。短い音源は最後に無音が続き、長い音源は動画の終わりでカットされます（ループ再生やフェードアウトは行いません）。</div>
     </div>
     <div class="field">
-      <label data-i18n="label_bgm_volume">BGM音量</label>
+      <label for="inp-audio-volume" data-i18n="label_bgm_volume">BGM音量</label>
       <div class="range-wrap">
-        <input type="range" id="inp-audio-volume" min="0" max="100" step="5" value="50">
+        <input type="range" id="inp-audio-volume" min="0" max="100" step="5" value="50" aria-describedby="hint-bgm-volume">
         <div class="range-val"><span id="val-audio-volume">50</span>%</div>
       </div>
+      <div class="field-hint" id="hint-bgm-volume" data-i18n="hint_bgm_volume">BGMの再生音量（0〜100%）。出力前に音源へ適用されます。0にすると無音で書き出します。</div>
     </div>
 
     <div class="sep"></div>
@@ -927,12 +929,14 @@ const i18n = {
     fps_24: '24fps — シネマ',
     fps_30: '30fps — スムーズ',
     label_ken_burns: 'Ken Burns エフェクト（パン＆ズーム）',
-    hint_duration: '各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。',
-    hint_fade: '写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。',
-    hint_transition: '暗転＝一度黒くなって切替。クロスフェード＝2枚が重なって切替。スライド／ワイプ＝横方向にスライドして切替。',
-    hint_resolution: '高解像度ほど高画質ですが、ファイルサイズが大きく処理時間も長くなります。SNS投稿には720pで十分です。',
-    hint_fps: '1秒あたりのコマ数。高いほど動きが滑らかですが、ファイルサイズが増えます。写真スライドショーには15fpsが最適です。',
-    hint_ken_burns: '写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。',
+    hint_duration: '各写真が画面に表示される秒数。短いとテンポよく、長いとじっくり見せられます。サムネイルの秒数バッジから写真ごとに上書きもできます。',
+    hint_fade: '写真と写真の切り替わりにかかる秒数。短いとキレよく、長いと余韻が出ます。各写真の表示時間の一部として重なります。',
+    hint_transition: '暗転＝一度黒くなって切替。クロスフェード＝2枚がディゾルブで重なって切替。スライド＝写真全体が横方向にスライドして切替。ワイプ＝横方向から次の写真が現れて切替。',
+    hint_resolution: '720p＝SNS・メッセージ向けの標準画質。1080p＝YouTubeなど高画質配信向け。1:1＝Instagramフィード、9:16＝ストーリーズ／TikTok／Reels向け。高解像度ほどファイルサイズが大きく、処理時間も長くなります。',
+    hint_fps: '1秒あたりのコマ数。写真スライドショーは静止画が中心なので、12〜15fpsで十分きれいに仕上がります。24fpsは映画的な質感、30fpsは最も滑らかですがファイルサイズが増えます。',
+    hint_ken_burns: '写真にゆっくりとしたズーム・パンの動きを加え、映画的な印象にします。1枚ごとに左右交互にパンし、1.0倍から1.08倍までズームします。',
+    hint_bgm: '音源は動画の長さに自動でトリミングされます。短い音源は最後に無音が続き、長い音源は動画の終わりでカットされます（ループ再生やフェードアウトは行いません）。',
+    hint_bgm_volume: 'BGMの再生音量（0〜100%）。出力前に音源へ適用されます。0にすると無音で書き出します。',
     label_bgm: 'BGM（任意）',
     btn_audio_select: '♪ 音楽を選択',
     audio_no_file: '未選択',
@@ -1038,12 +1042,14 @@ const i18n = {
     fps_24: '24fps — Cinema',
     fps_30: '30fps — Smooth',
     label_ken_burns: 'Ken Burns Effect (Pan & Zoom)',
-    hint_duration: 'How long each photo stays on screen. Shorter for a snappy feel, longer to linger on each image.',
-    hint_fade: 'How long the transition between photos takes. Shorter for a crisp cut, longer for a dreamy feel.',
-    hint_transition: 'Fade to Black = fades through black. Crossfade = photos blend into each other. Slide/Wipe = photos move horizontally.',
-    hint_resolution: 'Higher resolution means better quality but larger file size and longer processing. 720p is great for social media.',
-    hint_fps: 'Frames per second. Higher = smoother motion but larger files. 15fps is ideal for photo slideshows.',
-    hint_ken_burns: 'Adds a slow zoom and pan to each photo for a cinematic look.',
+    hint_duration: 'How long each photo stays on screen. Shorter for a snappy feel, longer to linger on each image. You can also override individual photos via the duration badge on each thumbnail.',
+    hint_fade: 'How long the transition between photos takes. Shorter for a crisp cut, longer for a dreamy feel. Overlaps with each photo\u2019s display time.',
+    hint_transition: 'Fade to Black = briefly fades through black. Crossfade = one photo dissolves into the next. Slide = the whole photo slides horizontally. Wipe = the next photo is revealed by a horizontal sweep.',
+    hint_resolution: '720p = standard quality for social posts and messaging. 1080p = high quality for YouTube and similar. 1:1 = Instagram feed. 9:16 = Stories, TikTok, Reels. Higher resolutions mean larger files and longer processing time.',
+    hint_fps: 'Frames per second. Photo slideshows are mostly still, so 12\u201315 fps already looks clean. 24fps gives a cinematic feel; 30fps is the smoothest but produces larger files.',
+    hint_ken_burns: 'Adds a slow zoom and pan to each photo for a cinematic look. Pans alternate left/right between photos and zoom from 1.0\u00d7 to 1.08\u00d7.',
+    hint_bgm: 'Audio is auto-trimmed to match the video length. Shorter tracks end in silence; longer tracks are cut off when the video ends (no looping or fade-out).',
+    hint_bgm_volume: 'Playback volume for the BGM (0\u2013100%). Applied to the audio before export. Set to 0 for a silent export.',
     label_bgm: 'BGM (Optional)',
     btn_audio_select: '♪ Select Music',
     audio_no_file: 'None',
