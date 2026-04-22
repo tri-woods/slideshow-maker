@@ -79,7 +79,7 @@ Enable **DNSSEC** in Cloudflare (DNS → Settings → DNSSEC → Enable) and pas
 6. [ ] Repo → Settings → Pages: set custom domain, wait for DNS check ✓.
 7. [ ] Wait for Let's Encrypt cert (check `curl -sI https://cinema-slide.app/` until it returns 200).
 8. [ ] Tick **Enforce HTTPS**.
-9. [ ] `index.html` has no `canonical` / `og:url` / `twitter:*` meta tags today — either leave as-is or add them pointing at `https://cinema-slide.app/` (separate enhancement; doesn't block launch).
+9. [x] Add `canonical` + `og:*` + `twitter:*` meta tags and a 1200×630 `og-image.png` pointing at `https://cinema-slide.app/`.
 10. [ ] Smoke test on new origin: app loads, SW registers, encode + download works, PWA installs, offline mode works, language toggle persists, analytics localStorage event fires.
 11. [ ] Test old origin still resolves (unless we intentionally drop it) — GitHub Pages keeps serving `tri-woods.github.io/slideshow-maker` alongside the custom domain by default.
 12. [ ] Update external mentions (portfolio, socials) to the new canonical URL.
