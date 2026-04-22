@@ -2407,11 +2407,6 @@ function trackEvent(name, data) {
 
 trackEvent('page_view');
 
-// Register service worker for PWA / offline support
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-
 </script>
 </body>
 </html>
