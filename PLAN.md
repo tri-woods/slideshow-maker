@@ -9,11 +9,9 @@ Forward-looking notes on deployment and monetization. Not yet committed to — t
 
 ### Proposed next step: custom domain on Cloudflare Registrar
 
-**Recommended domain:** `cinema-slide.app`
+**Confirmed domain:** `cinema-slide.app` (confirmed by user 2026-04-22).
 - Matches the product name, short, memorable.
 - `.app` is HSTS-preloaded — HTTPS-only is enforced at the browser level, which aligns with our Service Worker / WebCodecs requirements anyway.
-- Fallback candidates if `.app` is unavailable or too pricey: `cinemaslide.app`, `cinema-slide.io`, `cinemaslide.xyz`.
-- **User decision:** final domain choice.
 
 **Recommended registrar:** Cloudflare Registrar
 - At-cost pricing (no markup) — `.app` renews at wholesale (~$15/yr at time of writing).
@@ -73,25 +71,25 @@ Enable **DNSSEC** in Cloudflare (DNS → Settings → DNSSEC → Enable) and pas
 
 ### Launch checklist (ordered)
 
-1. [ ] Confirm final domain name with user.
+1. [x] Confirm final domain name with user. (cinema-slide.app, 2026-04-22)
 2. [ ] Register domain on Cloudflare Registrar; enable DNSSEC + 2FA on the Cloudflare account.
-3. [ ] Add DNS records per table above; verify with `dig +short <domain>` and `dig +short www.<domain>`.
-4. [ ] Grep repo for hard-coded `tri-woods.github.io` strings; replace with new canonical or make relative. Commit.
-5. [ ] Add `CNAME` file at repo root containing the apex domain. Commit + push.
+3. [ ] Add DNS records per table above; verify with `dig +short cinema-slide.app` and `dig +short www.cinema-slide.app`.
+4. [x] Grep repo for hard-coded `tri-woods.github.io` strings — audit clean (no matches outside PLAN.md).
+5. [x] Add `CNAME` file at repo root containing the apex domain. Commit + push.
 6. [ ] Repo → Settings → Pages: set custom domain, wait for DNS check ✓.
-7. [ ] Wait for Let's Encrypt cert (check `curl -sI https://<domain>/` until it returns 200).
+7. [ ] Wait for Let's Encrypt cert (check `curl -sI https://cinema-slide.app/` until it returns 200).
 8. [ ] Tick **Enforce HTTPS**.
-9. [ ] Update `index.html` (marketing page) meta tags — `og:url`, `canonical`, Twitter card URL — to the new origin.
+9. [ ] `index.html` has no `canonical` / `og:url` / `twitter:*` meta tags today — either leave as-is or add them pointing at `https://cinema-slide.app/` (separate enhancement; doesn't block launch).
 10. [ ] Smoke test on new origin: app loads, SW registers, encode + download works, PWA installs, offline mode works, language toggle persists, analytics localStorage event fires.
 11. [ ] Test old origin still resolves (unless we intentionally drop it) — GitHub Pages keeps serving `tri-woods.github.io/slideshow-maker` alongside the custom domain by default.
-12. [ ] Update `README`/`index.html` links + any external mentions (portfolio, socials) to the new canonical URL.
+12. [ ] Update external mentions (portfolio, socials) to the new canonical URL.
 
 ### Decisions that need you vs. defaults I'll pick
 
 **You decide:**
-- Final domain name (from the candidates above or something else).
 - Whether to keep `.github.io` serving as a mirror post-launch (default: yes, costs nothing).
 - Whether to migrate old-origin PWA users (default: skip — pre-launch, no users).
+- Whether to add SEO/share meta tags to `index.html` now (`canonical`, `og:url`, `og:image`, `twitter:card`) or defer.
 
 **Defaults I'll pick unless you object:**
 - Registrar: Cloudflare Registrar.
