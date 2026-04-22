@@ -2093,6 +2093,28 @@ async function runExport() {
       audioCtx.close().catch(() => {});
     }
 
+    // Verify the browser can actually encode AAC. If not, drop audio and warn
+    // rather than producing an MP4 with a silent audio track (or failing the
+    // whole export on a cryptic codec error).
+    if (pcmData) {
+      let aacOk = false;
+      if ('AudioEncoder' in window) {
+        try {
+          const check = await AudioEncoder.isConfigSupported({
+            codec: 'mp4a.40.2',
+            sampleRate: audioSampleRate,
+            numberOfChannels: audioNumChannels,
+            bitrate: 128000,
+          });
+          aacOk = !!check?.supported;
+        } catch (_) { aacOk = false; }
+      }
+      if (!aacOk) {
+        showError(t('error_audio_encoder_unsupported'));
+        pcmData = null;
+      }
+    }
+
     // Setup muxer
     const muxer = new Muxer({
       target: new ArrayBufferTarget(),
@@ -2195,8 +2217,8 @@ async function runExport() {
     encoder.close();
     activeEncoder = null;
 
-    // Encode audio track if available
-    if (pcmData && 'AudioEncoder' in window) {
+    // Encode audio track if available (AAC support was already verified above)
+    if (pcmData) {
       setStatus(t('status_encoding_audio'));
       const audioEncoder = new AudioEncoder({
         output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
@@ -2211,6 +2233,7 @@ async function runExport() {
 
       const CHUNK_SIZE = 1024;
       for (let offset = 0; offset < audioTotalSamples; offset += CHUNK_SIZE) {
+        if (encodingError) break;
         const chunkSamples = Math.min(CHUNK_SIZE, audioTotalSamples - offset);
         const audioData = new AudioData({
           format: 's16',
@@ -2226,8 +2249,7 @@ async function runExport() {
 
       await audioEncoder.flush();
       audioEncoder.close();
-    } else if (pcmData && !('AudioEncoder' in window)) {
-      showError(t('error_audio_encoder_unsupported'));
+      if (encodingError) throw encodingError;
     }
 
     muxer.finalize();
