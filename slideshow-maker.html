@@ -2220,8 +2220,22 @@ async function runExport() {
     // Encode audio track if available (AAC support was already verified above)
     if (pcmData) {
       setStatus(t('status_encoding_audio'));
+      // Chrome's AudioEncoder emits meta.decoderConfig.description as a full
+      // ES_Descriptor blob, but mp4-muxer expects it to already be the raw
+      // 2-byte AudioSpecificConfig — it drops the blob into DecSpecificInfo
+      // wholesale, producing a double-wrapped esds that strict decoders
+      // reject (silent audio in the output). Build a clean ASC ourselves.
+      const freqTable = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350];
+      const freqIdx = freqTable.indexOf(audioSampleRate);
+      const ascBits = (2 /* AAC-LC */ << 11) | (freqIdx << 7) | (audioNumChannels << 3);
+      const asc = new Uint8Array([(ascBits >> 8) & 0xff, ascBits & 0xff]);
       const audioEncoder = new AudioEncoder({
-        output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+        output: (chunk, meta) => {
+          if (meta?.decoderConfig) {
+            meta = { ...meta, decoderConfig: { ...meta.decoderConfig, description: asc.buffer } };
+          }
+          muxer.addAudioChunk(chunk, meta);
+        },
         error: (e) => { encodingError = e; },
       });
       audioEncoder.configure({
