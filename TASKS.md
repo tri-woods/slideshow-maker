@@ -4,6 +4,8 @@ Cross-machine task queue. Claim by changing `[ ]` to `[~] (host, YYYY-MM-DD)`; m
 
 ## For jupiter
 
+- [ ] Implement Pro unlock once user is unblocked. Read `PLAN.md` → "Monetization" first (tier split, decided defaults, implementation plan are all there). **Blocked on user** providing Lemon Squeezy product ID, store subdomain, webhook secret, and license-key API key after they sign up (~15 min: LS signup + create "CINEMA SLIDE Pro" product at $9 with license keys enabled). Once unblocked, work the "Implementation plan (once unblocked)" list in PLAN.md in order — client license verifier + feature gates + upgrade CTA + Cloudflare Worker for the webhook. Keep one `isPro()` function as the single gate. No rush — launch is already live; this is revenue work. — requested by beethoven 2026-04-22
+
 - [x] (jupiter, 2026-04-22) Propose a concrete deployment plan. Read `CLAUDE.md` and `PLAN.md` first. Expand on PLAN.md's "Deployment" section with specific, ordered steps: domain registrar choice (and why), exact DNS records for GitHub Pages (apex vs www), HTTPS/cert considerations, Pages config changes, PWA implications (`manifest.json` `start_url`/`scope`, service worker cache bust for the new origin), and a launch checklist. Call out decisions the user needs to make vs. defaults you can pick. Update `PLAN.md` in place (replace or expand the Deployment section), commit, and push. — requested by beethoven 2026-04-21
 
 ## For beethoven

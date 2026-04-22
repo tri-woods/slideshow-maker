@@ -100,9 +100,11 @@ Enable **DNSSEC** in Cloudflare (DNS → Settings → DNSSEC → Enable) and pas
 
 ## Monetization
 
-**Direction:** freemium "Pro unlock" via a one-time Stripe payment that emails a license key. Preserves the static-file / no-account feel — no login, no subscription, no server for normal use.
+**Direction:** freemium "Pro unlock" via a one-time payment that emails a license key. Preserves the static-file / no-account feel — no login, no subscription, no server for normal use.
 
-**Proposed tier split:**
+**Status (2026-04-22):** planning agreed, blocked on user setting up a payment provider account. No code written yet.
+
+### Tier split
 
 | | Free | Pro |
 |---|---|---|
@@ -112,8 +114,33 @@ Enable **DNSSEC** in Cloudflare (DNS → Settings → DNSSEC → Enable) and pas
 | BGM library | — | included |
 | Transitions | basic set | full set |
 
-**Implementation sketch:** Stripe Payment Link → tiny serverless webhook → emailed license key → client-side check unlocks Pro features. The existing 1.5s watermark card is the free-tier lever; Pro should cleanly skip it.
+### Decided defaults
 
-**Accepted tradeoffs:**
-- Breaks the "single HTML file, no backend" elegance for the payment/license flow only.
+- **Price:** $9 USD, one-time (not subscription).
+- **Payment provider: Lemon Squeezy** (merchant-of-record). Chosen over Stripe because LS handles global VAT/tax — important for a Japan-based seller reaching EU/US customers — and bundles a license-key API that fits the HMAC scheme below. Fee premium (~5% + $0.50/sale vs Stripe's ~3%) buys tax compliance peace-of-mind. Gumroad and Paddle were considered but LS has the cleanest license-key integration.
+- **Serverless host:** Cloudflare Workers. Reason: already on CF for DNS/registrar, free tier covers the webhook comfortably, same dashboard.
+- **License scheme:** HMAC-signed token `<payload>.<sig>` where payload = random ID + purchase date, sig = HMAC-SHA256 keyed by a secret embedded in the client. Client verifies offline, no round-trips at runtime, resilient to backend downtime. Accepted loss: no per-install revocation.
+- **Delivery:** LS hosted checkout → success page shows the key + "we've also emailed it." Webhook also sends the email (LS sends one automatically; we can supplement if needed).
+- **Watermark lever:** the existing 1.5s watermark card in `slideshow-maker.html` (see `renderSingleLayer` 'watermark' branch) is the free-tier gate; Pro should skip it in `buildTimeline`.
+
+### Blocking step (user)
+
+User needs to sign up for Lemon Squeezy (~15 min: legal name, bank account, ID photo), create a product titled "CINEMA SLIDE Pro" at $9, enable license keys for it, and share:
+- Product ID / variant ID
+- LS store subdomain (for checkout URLs)
+- Webhook signing secret (from LS dashboard)
+- Any API key LS exposes for license-key verification
+
+### Implementation plan (once unblocked)
+
+1. **License verifier in the client** (`slideshow-maker.html`): parse `?license=<token>` on load → verify HMAC → store in `localStorage` as `cinema-slide-pro`. Add an "Enter license" modal behind a "Pro" button in header. No network call.
+2. **Feature gating:** check `isPro()` before each Pro feature — uncap photos (150), expose 1080p/vertical/square in resolution dropdown, skip watermark segment in `buildTimeline`, unhide BGM library UI (not built yet), enable full transition set. Keep one function `isPro()` so the gate stays centralized.
+3. **"Upgrade" CTA:** inline prompts when a user hits a free-tier ceiling (e.g. tries to add a 31st photo, selects 1080p) → modal with screenshot + LS buy link.
+4. **Cloudflare Worker** (`worker/license.ts`, new): receives LS webhook on `order_created`, validates LS signature, generates an HMAC token, returns it. LS email template can include `{{custom_data.license}}` to deliver to buyer. Worker secrets: `LS_WEBHOOK_SECRET`, `LICENSE_HMAC_SECRET`.
+5. **Local dev:** Worker runnable via `wrangler dev`; app continues to live as a static file with no build step.
+
+### Accepted tradeoffs
+
+- Breaks the "single HTML file, no backend" elegance for the payment/license flow only. The Worker is out-of-band; the app itself stays single-file.
 - Client-side license verification is trivially bypassable. Treated as honor-system DRM — not worth overengineering anti-piracy.
+- HMAC scheme means we can't revoke a specific license if it leaks. If that becomes a real problem, swap to a JWT with a small online validation endpoint later.
