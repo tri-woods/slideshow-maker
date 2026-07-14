@@ -5,6 +5,7 @@
   "description": "CINEMA SLIDE — browser-based photo slideshow to MP4 video maker",
   "scripts": {
     "test": "npx playwright test",
+    "test:prod": "npx playwright test --config playwright.prod.config.ts",
     "test:headed": "npx playwright test --headed",
     "test:ui": "npx playwright test --ui",
     "test:debug": "npx playwright test --debug",
