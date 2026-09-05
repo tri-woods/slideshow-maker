@@ -3,3 +3,8 @@ test-results/
 playwright-report/
 blob-report/
 .DS_Store
+
+# Claude Code per-machine local state — not shared
+.claude/settings.local.json
+.claude/launch.json
+.claude/worktrees/
