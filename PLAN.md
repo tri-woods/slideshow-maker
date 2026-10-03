@@ -1,13 +1,29 @@
 # PLAN
 
-Forward-looking notes on deployment and monetization. Not yet committed to — these are working directions, open to revision.
+Notes on deployment and monetization. **Deployment shipped on 2026-04-22 and the section below is now a record of what was done, not a proposal.** Monetization is still forward-looking: planning agreed, no code written, blocked on the user (see that section).
 
 ## Deployment
 
-### Current state
-`.github/workflows/deploy.yml` auto-deploys to GitHub Pages on every push to `main` (and via `workflow_dispatch`). No build step — the repo root is uploaded as the Pages artifact. Live at `https://tri-woods.github.io/slideshow-maker/`. Static PWA, no backend. The single-file, no-build shape is a feature worth preserving; the plan below adds a domain without adding CI complexity or preview envs.
+### Current state (verified 2026-10-03)
+`.github/workflows/deploy.yml` auto-deploys to GitHub Pages on every push to `main` (and via `workflow_dispatch`). No build step — the repo root is uploaded as the Pages artifact. Static PWA, no backend, and the single-file no-build shape survived the domain move intact: no CI complexity, no preview envs, no CDN.
 
-### Proposed next step: custom domain on Cloudflare Registrar
+**Live at `https://cinema-slide.app/`** (custom domain, since 2026-04-22). Measured today:
+
+| Check | Result |
+|---|---|
+| `https://cinema-slide.app/` | HTTP 200 |
+| `https://tri-woods.github.io/slideshow-maker/` | 301 → `https://cinema-slide.app/` |
+| `https://www.cinema-slide.app/` | 301 → `https://cinema-slide.app/` |
+| `http://cinema-slide.app/` | 301 → HTTPS (Enforce HTTPS is on) |
+| Apex DNS | the 4 A + 4 AAAA GitHub Pages addresses from the table below |
+| TLS | Let's Encrypt, auto-renewed (current cert issued 2026-08-20) |
+| DNSSEC | enabled — DS published, resolver reports AD=true |
+
+The old `tri-woods.github.io/slideshow-maker` origin still serves as a redirect, so old links and old PWA installs keep working.
+
+*This section read "Live at `https://tri-woods.github.io/slideshow-maker/`" and framed the domain work below as a proposal — accurate when written, wrong from 2026-04-22 onward, and left unrevised for the five months after shipping. Corrected 2026-10-03.*
+
+### How the custom domain was set up (shipped 2026-04-22; retained as the record)
 
 **Confirmed domain:** `cinema-slide.app` (confirmed by user 2026-04-22).
 - Matches the product name, short, memorable.
@@ -71,20 +87,24 @@ Enable **DNSSEC** in Cloudflare (DNS → Settings → DNSSEC → Enable) and pas
 
 ### Launch checklist (ordered)
 
+**Boxes 2, 3, 6, 7, 8 and 11 were completed on 2026-04-22 but never ticked; reconciled against live measurements 2026-10-03.**
+
 1. [x] Confirm final domain name with user. (cinema-slide.app, 2026-04-22)
-2. [ ] Register domain on Cloudflare Registrar; enable DNSSEC + 2FA on the Cloudflare account.
-3. [ ] Add DNS records per table above; verify with `dig +short cinema-slide.app` and `dig +short www.cinema-slide.app`.
+2. [x] Register domain on Cloudflare Registrar; enable DNSSEC + 2FA on the Cloudflare account. — domain registered and resolving; DNSSEC confirmed (DS published, AD=true). *Account 2FA not verifiable from here — user to confirm if it matters.*
+3. [x] Add DNS records per table above; verify with `dig +short cinema-slide.app` and `dig +short www.cinema-slide.app`. — apex returns exactly the 4 A + 4 AAAA addresses in the table; `www` resolves and 301s to apex.
 4. [x] Grep repo for hard-coded `tri-woods.github.io` strings — audit clean (no matches outside PLAN.md).
 5. [x] Add `CNAME` file at repo root containing the apex domain. Commit + push.
-6. [ ] Repo → Settings → Pages: set custom domain, wait for DNS check ✓.
-7. [ ] Wait for Let's Encrypt cert (check `curl -sI https://cinema-slide.app/` until it returns 200).
-8. [ ] Tick **Enforce HTTPS**.
+6. [x] Repo → Settings → Pages: set custom domain, wait for DNS check ✓. — serving under the custom domain.
+7. [x] Wait for Let's Encrypt cert (check `curl -sI https://cinema-slide.app/` until it returns 200). — 200; Let's Encrypt cert current, auto-renewing (issued 2026-08-20).
+8. [x] Tick **Enforce HTTPS**. — `http://cinema-slide.app/` 301s to HTTPS.
 9. [x] Add `canonical` + `og:*` + `twitter:*` meta tags and a 1200×630 `og-image.png` pointing at `https://cinema-slide.app/`.
-10. [ ] Smoke test on new origin: app loads, SW registers, encode + download works, PWA installs, offline mode works, language toggle persists, analytics localStorage event fires.
-11. [ ] Test old origin still resolves (unless we intentionally drop it) — GitHub Pages keeps serving `tri-woods.github.io/slideshow-maker` alongside the custom domain by default.
-12. [ ] Update external mentions (portfolio, socials) to the new canonical URL.
+10. [~] Smoke test on new origin: app loads, SW registers, encode + download works, PWA installs, offline mode works, language toggle persists, analytics localStorage event fires. — **partially automated** by `tests/prod/smoke.spec.ts` (2026-07-14, `npm run test:prod`, 5/5 green): app boot, SW register + activate, full 2-photo export to a `blob:` download, canonical/`og:url` meta. **Still unverified: PWA install, offline mode, language-toggle persistence, the analytics localStorage event** — and the suite is Chromium-only, so iOS Safari and Edge are untested throughout.
+11. [x] Test old origin still resolves (unless we intentionally drop it) — GitHub Pages keeps serving `tri-woods.github.io/slideshow-maker` alongside the custom domain by default. — 301 to the new origin, asserted by the prod smoke suite and re-measured 2026-10-03.
+12. [~] Update external mentions (portfolio, socials) to the new canonical URL. — GitHub repo description + homepage done; portfolio link and social bios still open. Tracked in `TASKS.md`.
 
 ### Decisions that need you vs. defaults I'll pick
+
+*All resolved at launch — kept for the rationale. The defaults below were taken as written.*
 
 **You decide:**
 - Whether to keep `.github.io` serving as a mirror post-launch (default: yes, costs nothing).
